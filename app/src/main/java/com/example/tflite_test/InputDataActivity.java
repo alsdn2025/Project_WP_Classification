@@ -14,13 +14,14 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.util.Pair;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /*
 * usage : 갤러리에서 사진을 꺼내어 추론
@@ -32,6 +33,7 @@ public class InputDataActivity extends AppCompatActivity {
     private TextView output_textView;
     private PlantOrgans organ;
     private ClassifierWithTFLiteSupport classifier;
+    private List<Map.Entry<String, Float>> outputList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,9 @@ public class InputDataActivity extends AppCompatActivity {
 
         Button selectBtn = findViewById(R.id.selectBtn);
         selectBtn.setOnClickListener(view -> getImageFromGallery());
+
+        Button detailBtn = findViewById(R.id.detailBtn);
+        detailBtn.setOnClickListener(view -> getDetailedOutput());
 
         imageView = findViewById(R.id.imageView);
         output_textView = findViewById(R.id.output_textView);
@@ -85,6 +90,23 @@ public class InputDataActivity extends AppCompatActivity {
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST_CODE); // deprecated
         }catch (Exception e){
             Log.e(TAG, "Failed to get Image from Gallery", e);
+        }
+    }
+
+    // 추론 결과로 받은 List<Entry>를 하나의 String 으로 변환하여 Intent 에 전달,
+    // Detailed Output Activity 실행
+    private void getDetailedOutput(){
+        try{
+            Intent i = new Intent(InputDataActivity.this, detailedOutputActivity.class);
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, Float> entry: outputList){
+                sb.append(entry.getKey()).append(" : ").append(entry.getValue()).append(System.lineSeparator());
+            }
+            i.putExtra("output", sb.toString());
+            i.putExtra("fileName", ((TextView)findViewById(R.id.filename_textview)).getText());
+            startActivity(i);
+        }catch (Exception e){
+            Log.e(TAG, "Failed to ", e);
         }
     }
 
@@ -135,10 +157,10 @@ public class InputDataActivity extends AppCompatActivity {
             }
 
             if(bitmap != null){
-                Pair<String, Float> output = classifier.classify(bitmap);
+                outputList = classifier.classify(bitmap);
                 String resultStr = String.format(Locale.ENGLISH,
-                        "Inferred class : %s, probability : %.2f%%",
-                        output.first, output.second * 100);
+                        "Inferred class : %s " + System.lineSeparator() + "Probability : %.2f%%",
+                        outputList.get(0).getKey(), outputList.get(0).getValue() * 100);
 
                 imageView.setImageBitmap(bitmap);
                 output_textView.setText(resultStr);

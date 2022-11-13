@@ -8,4 +8,5 @@
     <string name="select_photo">Select Photo</string>
     <string name="filename">fileName</string>
     <string name="result">Result</string>
+    <string name="detail">Detailed results</string>
 </resources>

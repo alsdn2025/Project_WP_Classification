@@ -3,7 +3,6 @@ package com.example.tflite_test;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.util.Pair;
 
 import org.tensorflow.lite.Tensor;
 import org.tensorflow.lite.support.common.FileUtil;
@@ -15,9 +14,12 @@ import org.tensorflow.lite.support.model.Model;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class ClassifierWithTFLiteSupport {
     private final static String TAG = "ClassifierWithTFLiteSupport";
@@ -25,7 +27,6 @@ public class ClassifierWithTFLiteSupport {
     private final String LABEL_FILE;
 
     int modelInputWidth, modelInputHeight, modelInputChannel;
-//    int modelOutputClasses;
     Context context;
     TensorImage inputImage; // 이미지 관련 데이터 저장용 인스턴스
     TensorBuffer outputBuffer; // 출력 결과를 담을 버퍼
@@ -33,13 +34,14 @@ public class ClassifierWithTFLiteSupport {
 
     Model model; // tflite 로드부터 추론까지 모두 수행 가능한 model 개체
 
+    // context 만 전달시 테스트라고 간주, 1_to_30 모델&라벨 파일 설정
     public ClassifierWithTFLiteSupport(Context context){
         this.context = context;
         MODEL_NAME = "MobileNetV2_leaf(front)_1_to_30.tflite";
         LABEL_FILE = "labels_leaf_1_to_30.txt";
     }
 
-    // 전달된 ENUM에 따라 모델 및 라벨 파일 설정
+    // 객체 생성시 전달받은 식물 부위(기관)에 따라 사용할 모델 및 라벨 파일 설정
     public ClassifierWithTFLiteSupport(Context context, PlantOrgans organ){
         this.context = context;
         switch (organ){
@@ -87,11 +89,6 @@ public class ClassifierWithTFLiteSupport {
         model = Model.createModel(context, MODEL_NAME);
         Log.e(TAG, "model created");
 
-//        NO MORE USAGE
-//        interpreter = new Interpreter(model);
-//        ByteBuffer model = FileUtil.loadMappedFile(context, MODEL_NAME);
-//        model.order(ByteOrder.nativeOrder());
-
         initModelShape();
         labels = FileUtil.loadLabels(context, LABEL_FILE); // label 텍스트 파일 읽고 저장
     }
@@ -117,32 +114,35 @@ public class ClassifierWithTFLiteSupport {
         return imageProcessor.process(inputImage);
     }
 
-    // 추론 결과인 Map 을 받아, 가장 높은 확률을 가진 원소를 <Sting, Float> 형태로 리턴시켜주는 메서드
+
     // classify()에서 호출
-    private Pair<String, Float> argmax(Map<String, Float> map){
-        String maxKey = "";
-        float maxVal = -1;
+    // 모델로부터 받은 Output 맵의 value 를 정규화하고, value 를 기준으로 정렬된 Entry List 로 만들어 리턴
+    private List<Entry<String, Float>> getSortedEntryList(Map<String, Float> map){
         float sumVal = 0;
 
-        for (Map.Entry<String, Float> entry: map.entrySet()){
-            float f = entry.getValue();
+        List<Entry<String, Float>> list_entries = new ArrayList<>(map.entrySet());
+        Collections.sort(list_entries, (obj1, obj2) -> {
+            // 내림 차순 정렬
+            return obj2.getValue().compareTo(obj1.getValue());
+        });
 
-            // logging, 눈에 확 보이게 Error 로 표시
+        for (Entry<String, Float> entry: list_entries){
+            // logging, 잘 보이게 Error 로 표시
             String str = "String:" + entry.getKey() + " Val: " + entry.getValue();
             Log.e(TAG, str);
 
-            sumVal += f;
-            if(f > maxVal){
-                maxKey = entry.getKey();
-                maxVal = f;
-            }
+            sumVal += entry.getValue();
         }
-        Log.e(TAG,"sumVal : " + sumVal);
-        return new Pair<>(maxKey, maxVal/sumVal);
+
+        for (Entry<String, Float> entry: list_entries){
+            entry.setValue(entry.getValue()/sumVal);
+        }
+
+        return list_entries;
     }
 
     // 추론 메서드.
-    public Pair<String, Float> classify(Bitmap image){
+    public List<Entry<String, Float>> classify(Bitmap image){
         inputImage = loadImage(image);
 
         // outputBuffer 는 rewind 해서 전달
@@ -156,7 +156,7 @@ public class ClassifierWithTFLiteSupport {
         // 모델이 추론한 결과와 label 리스트를 매핑
         Map<String, Float> output = new TensorLabel(labels, outputBuffer).getMapWithFloatValue();
 
-        return argmax(output);
+        return getSortedEntryList(output);
     }
 
     public void finish(){
