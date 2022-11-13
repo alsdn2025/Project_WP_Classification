@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">tflite_test</string>
+    <string name="gallery_not_use">Gallery(Not Use)</string>
+    <string name="flower">Flower</string>
+    <string name="fruit">Fruit</string>
+    <string name="leaf">Leaf</string>
+    <string name="organ">Organ</string>
+    <string name="select_photo">Select Photo</string>
+    <string name="filename">fileName</string>
+    <string name="result">Result</string>
 </resources>

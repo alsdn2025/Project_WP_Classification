@@ -1,16 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/galleryBtn"
-        android:layout_width="wrap_content"
+        android:id="@+id/FlowerBtn"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Gallery" />
+        android:layout_marginVertical="50dp"
+        android:text="@string/flower" />
+
+    <Button
+        android:id="@+id/FruitBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="50dp"
+        android:text="@string/fruit" />
+
+    <Button
+        android:id="@+id/LeafBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="50dp"
+        android:text="@string/leaf" />
 </LinearLayout>

@@ -1,10 +1,10 @@
 package com.example.tflite_test;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -12,10 +12,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // galleryButton을 누르면 액티비티 전환
-        Button galleryBtn = findViewById(R.id.galleryBtn);
-        galleryBtn.setOnClickListener(view -> {
+        Button FlowerBtn = findViewById(R.id.FlowerBtn);
+        Button FruitBtn = findViewById(R.id.FruitBtn);
+        Button LeafBtn = findViewById(R.id.LeafBtn);
+
+        FlowerBtn.setOnClickListener(view -> {
             Intent i = new Intent(MainActivity.this, InputDataActivity.class);
+            i.putExtra("organ", PlantOrgans.FLOWER);
+            startActivity(i);
+        });
+        FruitBtn.setOnClickListener(view -> {
+            Intent i = new Intent(MainActivity.this, InputDataActivity.class);
+            i.putExtra("organ", PlantOrgans.FRUIT);
+            startActivity(i);
+        });
+        LeafBtn.setOnClickListener(view -> {
+            Intent i = new Intent(MainActivity.this, InputDataActivity.class);
+            i.putExtra("organ", PlantOrgans.LEAF);
             startActivity(i);
         });
     }

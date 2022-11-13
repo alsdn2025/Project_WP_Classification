@@ -2,6 +2,7 @@ package com.example.tflite_test;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,9 +28,10 @@ import java.util.Locale;
 public class InputDataActivity extends AppCompatActivity {
     public static final int GALLERY_IMAGE_REQUEST_CODE = 1;
     private static final String TAG = "InputDataActivity";
-    private ClassifierWithTFLiteSupport classifier;
     private ImageView imageView;
-    private TextView textView;
+    private TextView output_textView;
+    private PlantOrgans organ;
+    private ClassifierWithTFLiteSupport classifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +42,40 @@ public class InputDataActivity extends AppCompatActivity {
         selectBtn.setOnClickListener(view -> getImageFromGallery());
 
         imageView = findViewById(R.id.imageView);
-        textView = findViewById(R.id.textView);
+        output_textView = findViewById(R.id.output_textView);
+        TextView organ_textView = findViewById(R.id.organ_textView);
 
-        classifier = new ClassifierWithTFLiteSupport(this);
+        Intent intent = getIntent();
+        organ = (PlantOrgans) intent.getSerializableExtra("organ");
+        if(organ == null){
+            Log.e(TAG, "Organ is empty, Create classifier with default constructor");
+        }
+        setOrganTextView(organ_textView);
+
+
+        classifier = new ClassifierWithTFLiteSupport(this, organ);
         try{
             classifier.init();
         }catch (IOException e){
+            Log.e(TAG,"Classifier initiate error");
             e.printStackTrace();
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void setOrganTextView(TextView textView){
+        switch (this.organ){
+            case FLOWER:
+                textView.setText("Flower");
+                break;
+            case FRUIT:
+                textView.setText("Fruit");
+                break;
+            case LEAF:
+                textView.setText("Leaf");
+                break;
+            default:
+                textView.setText("Leaf(1_to_30)");
         }
     }
 
@@ -61,6 +90,7 @@ public class InputDataActivity extends AppCompatActivity {
 
     // uri 객체로부터 파일 이름을 가져와 filename_text 뷰에 setText 하는 메서드
     // https://developer.android.com/training/secure-file-sharing/retrieve-info?hl=ko#java
+    @SuppressLint("SetTextI18n")
     private void displayImageNameFromUri(Uri uri){
         /*
          * Get the file's content URI from the incoming Intent,
@@ -76,9 +106,9 @@ public class InputDataActivity extends AppCompatActivity {
          */
         int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
         returnCursor.moveToFirst();
-        TextView nameView = (TextView) findViewById(R.id.filename_text);
+        TextView filename_textView = findViewById(R.id.filename_textview);
 
-        nameView.setText("Image file name : " + returnCursor.getString(nameIndex));
+        filename_textView.setText("File name : " + returnCursor.getString(nameIndex));
     }
 
     @Override
@@ -111,11 +141,10 @@ public class InputDataActivity extends AppCompatActivity {
                         output.first, output.second * 100);
 
                 imageView.setImageBitmap(bitmap);
-                textView.setText(resultStr);
+                output_textView.setText(resultStr);
             }else{
                 Log.e(TAG,"Bitmap is null Object");
             }
-
         }
     }
 }

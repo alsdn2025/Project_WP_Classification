@@ -34,9 +34,32 @@ public class ClassifierWithTFLiteSupport {
     Model model; // tflite 로드부터 추론까지 모두 수행 가능한 model 개체
 
     public ClassifierWithTFLiteSupport(Context context){
+        this.context = context;
         MODEL_NAME = "MobileNetV2_leaf(front)_1_to_30.tflite";
         LABEL_FILE = "labels_leaf_1_to_30.txt";
+    }
+
+    // 전달된 ENUM에 따라 모델 및 라벨 파일 설정
+    public ClassifierWithTFLiteSupport(Context context, PlantOrgans organ){
         this.context = context;
+        switch (organ){
+            case FLOWER:
+                MODEL_NAME = "Flowers_ResNet50.tflite";
+                LABEL_FILE = "labels_Flower.txt";
+                break;
+            case FRUIT:
+                MODEL_NAME = "Fruits_ResNet50.tflite";
+                LABEL_FILE = "labels_Fruit.txt";
+                break;
+            case LEAF:
+                MODEL_NAME = "Leaf(front)_ResNet50.tflite";
+                LABEL_FILE = "labels_leaf.txt";
+                break;
+            default:
+                Log.e(TAG, "생성자 파라미터가 적합하지 않음, default 값으로 세팅");
+                MODEL_NAME = "MobileNetV2_leaf(front)_1_to_30.tflite";
+                LABEL_FILE = "labels_leaf_1_to_30.txt";
+        }
     }
 
     public ClassifierWithTFLiteSupport(Context context, String modelName, String labelFile){
@@ -63,6 +86,8 @@ public class ClassifierWithTFLiteSupport {
     public void init() throws IOException {
         model = Model.createModel(context, MODEL_NAME);
         Log.e(TAG, "model created");
+
+//        NO MORE USAGE
 //        interpreter = new Interpreter(model);
 //        ByteBuffer model = FileUtil.loadMappedFile(context, MODEL_NAME);
 //        model.order(ByteOrder.nativeOrder());
@@ -101,8 +126,11 @@ public class ClassifierWithTFLiteSupport {
 
         for (Map.Entry<String, Float> entry: map.entrySet()){
             float f = entry.getValue();
+
+            // logging, 눈에 확 보이게 Error 로 표시
             String str = "String:" + entry.getKey() + " Val: " + entry.getValue();
             Log.e(TAG, str);
+
             sumVal += f;
             if(f > maxVal){
                 maxKey = entry.getKey();
