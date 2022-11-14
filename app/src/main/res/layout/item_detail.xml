@@ -16,6 +16,7 @@
             android:layout_height="35dp"/>
         <TextView
             android:text="User name"
+            android:textStyle="bold"
             android:id="@+id/detailviewitem_profile_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -50,6 +51,7 @@
     <TextView
         android:id="@+id/detailviewitem_explain_textview"
         android:text="Explain content"
+        android:textSize="16dp"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"

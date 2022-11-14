@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import com.example.myapp1.navigation.AlarmFragment
 import com.example.myapp1.navigation.DetailViewFragment
-import com.example.myapp1.navigation.GridFragment
+import com.example.myapp1.navigation.SearchFragment
 import com.example.myapp1.navigation.UserFragment
 import com.google.android.material.navigation.NavigationBarView
 
@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation).selectedItemId = R.id.action_home
 
 
+
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 return true
             }
             R.id.action_search ->{
-                var gridFragment = GridFragment()
+                var gridFragment = SearchFragment()
                 supportFragmentManager.beginTransaction().replace(R.id.main_content,gridFragment).commit()
                 return true
             }

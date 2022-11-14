@@ -50,8 +50,8 @@
     <string name="back">Back</string>
 
     <!-- etc -->
-    <item name="visible" type="id"/>
-    <item name="masked" type="id"/>
-<!-- TODO: Remove or change this placeholder text -->
+    <item name="visible" type="id" />
+    <item name="masked" type="id" />
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
