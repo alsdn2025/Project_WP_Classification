@@ -32,18 +32,18 @@ class SearchFragment :Fragment(){
         val LeafBtn: Button = view.findViewById<Button>(R.id.LeafBtn)
 
         FlowerBtn.setOnClickListener { view: View? ->
-            val i = Intent(context, InputDataActivity::class.java)
-            //i.putExtra("organ", PlantOrgans.FLOWER)
+            val i = Intent(activity, InputDataActivity::class.java)
+            i.putExtra("organ", PlantOrgans.FLOWER)
             startActivity(i)
         }
         FruitBtn.setOnClickListener { view: View? ->
-            val i = Intent(context, InputDataActivity::class.java)
-            //i.putExtra("organ", PlantOrgans.FRUIT)
+            val i = Intent(activity, InputDataActivity::class.java)
+            i.putExtra("organ", PlantOrgans.FRUIT)
             startActivity(i)
         }
         LeafBtn.setOnClickListener { view: View? ->
-            val i = Intent(context, InputDataActivity::class.java)
-            //i.putExtra("organ", PlantOrgans.LEAF)
+            val i = Intent(activity, InputDataActivity::class.java)
+            i.putExtra("organ", PlantOrgans.LEAF)
             startActivity(i)
         }
     }
