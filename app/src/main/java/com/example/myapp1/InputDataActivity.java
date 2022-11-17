@@ -35,6 +35,7 @@ public class InputDataActivity extends AppCompatActivity {
     private ClassifierWithTFLiteSupport classifier;
     private List<Map.Entry<String, Float>> outputList;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

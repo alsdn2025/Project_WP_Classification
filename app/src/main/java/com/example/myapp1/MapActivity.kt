@@ -142,7 +142,7 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         var markers = MarkerOptions()
         markers.icon(
             //BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-            BitmapDescriptorFactory.fromResource(R.drawable.plant)
+            BitmapDescriptorFactory.fromResource(R.drawable.logo_team2)
         )
         if (datanum >= 1) {
             for (count in 1..datanum) {
