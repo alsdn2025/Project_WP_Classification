@@ -1,6 +1,7 @@
 package com.example.myapp1
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.database.sqlite.SQLiteDatabase
@@ -101,6 +102,7 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             apiClient.connect()
         }
     }
+    @SuppressLint("Range")
     private fun moveMap(latitude: Double, longitude: Double) {
         val latLng = LatLng(latitude, longitude)
         val position: CameraPosition = CameraPosition.Builder()
