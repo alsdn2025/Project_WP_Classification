@@ -1,7 +1,6 @@
 package com.example.myapp1
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.database.sqlite.SQLiteDatabase
@@ -34,9 +33,12 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
     lateinit var apiClient: GoogleApiClient
     var googleMap: GoogleMap? = null
 
-    //db 관련
+    //db 관련 변수 설정
     lateinit var dbHelper: DBHelper
     lateinit var database: SQLiteDatabase
+    //요기까지 DB 관련 변수 설정
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -102,7 +104,6 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
             apiClient.connect()
         }
     }
-    @SuppressLint("Range")
     private fun moveMap(latitude: Double, longitude: Double) {
         val latLng = LatLng(latitude, longitude)
         val position: CameraPosition = CameraPosition.Builder()
@@ -114,8 +115,7 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         // 마커 옵션
         val markerOptions = MarkerOptions()
         markerOptions.icon(
-            //BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
-            BitmapDescriptorFactory.fromResource(R.drawable.logo_team2)
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
         )
 
         markerOptions.position(latLng)
@@ -127,30 +127,33 @@ class MapActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         //db 활용한 추가 마커 표시
         dbHelper = DBHelper(this, "mydb.db", null, 1)
         database = dbHelper.writableDatabase
-        var datanum: Int = 0
-        var langlist = mutableListOf<Double>()
-        var longlist = mutableListOf<Double>()
-        var query = "SELECT * FROM location;"
+        //db와 연동하고
+
+        var datanum: Int = 0 //저장된 식물 위치 정보가 몇 개인지 세줄 용도
+        var latlist = mutableListOf<Double>() // 위도 저장용 리스트
+        var longlist = mutableListOf<Double>() //경도 저장용 리스트
+        var query = "SELECT * FROM location;" //db의 location 테이블에서 전부 가져온다
         var cursor = database.rawQuery(query, null)
-        while (cursor.moveToNext()) {
+        while (cursor.moveToNext()) {//커서가 db의 한 행씩 내려가면서, 끝까지 반복
             var lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+            //DB location 테이블의 lat속성의 위도 값을 변수 lat에 저장
             var long = cursor.getDouble(cursor.getColumnIndex("long"))
-            langlist.add(lat)
-            longlist.add(long)
-            datanum = datanum + 1
+            //DB location 테이블의 long속성의 경도 값을 변수 long에 저장
+            latlist.add(lat) //위도용 테이블에 이번 위도값 저장
+            longlist.add(long) //경도용 테이블에 이번 경도값 저장
+            datanum = datanum + 1 //데이터 개수 한 개 증가시켜주기
         }
 
         //db에서 추가 마커 데이터 가져오기
         var markers = MarkerOptions()
         markers.icon(
-            //BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-            BitmapDescriptorFactory.fromResource(R.drawable.logo_team2)
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
         )
-        if (datanum >= 1) {
-            for (count in 1..datanum) {
-                markers.position(LatLng(langlist[count - 1], longlist[count - 1]))
-                markers.title("additional${count}")
-                googleMap?.addMarker(markers)
+        if (datanum >= 1) {//db에 저장한 식물 개수가 1개 이상일 때만 추가 마커 표시할 거니까
+            for (count in 1..datanum) {//datanum번 만큼 반복
+                markers.position(LatLng(latlist[count - 1], longlist[count - 1]))//인덱스니까 -1해주고
+                markers.title("식물 컬렉션${count}")//마커 클릭하면 보일 문자열
+                googleMap?.addMarker(markers)//마커 표시
             }
         }
     }
