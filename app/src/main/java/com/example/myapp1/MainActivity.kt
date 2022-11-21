@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.location.Location
 import android.os.Build
@@ -15,6 +16,9 @@ import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.example.myapp1.Cam.CameraActivity
+import com.example.myapp1.databinding.ActivityMainBinding
 import com.example.myapp1.navigation.AlarmFragment
 import com.example.myapp1.navigation.DetailViewFragment
 import com.example.myapp1.navigation.SearchFragment
@@ -23,12 +27,13 @@ import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationBarView
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
-//현재 위치 관련
+    //현재 위치 관련
     lateinit var dbHelper: DBHelper
     lateinit var database: SQLiteDatabase
 
-    var templat: Double? = 0.0
-    var templong: Double? = 0.0
+    var templat: Double? = 0.0 //현재 위치 위도를 저장할 변수
+    var templong: Double? = 0.0 //현재 위치 경도를 저장할 변수
+    var updatecheck: Int = 0 //최신 위차가 갱신됐는지 체크하기 위해!
 
     //현재 위치 관련
     private var mFusedLocationProviderClient: FusedLocationProviderClient? =
@@ -36,7 +41,13 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
     internal lateinit var mLocationRequest: LocationRequest // 위치 정보 요청의 매개변수를 저장하는
     private val REQUEST_PERMISSION_LOCATION = 10
+    //요기까지 Gps 관련 부분
 
+    // Camera Permission
+    private val REQUEST_PERMISSION_CAMERA = 1000
+
+
+    private lateinit var binding2: ActivityMainBinding
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,17 +58,22 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         // set default screen
         findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation).selectedItemId = R.id.action_home
 
-    //위치 저장 관련
+
+        //위치 저장 관련
         //DB 관련 부분
         dbHelper = DBHelper(this, "mydb.db", null, 1)
         database = dbHelper.writableDatabase
 
-        //현재 위치 측정
+        //Gps기능 사용하기 위해
         mLocationRequest = LocationRequest.create().apply {
 
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         }
+        if (checkPermissionForLocation(this)) {
+            startLocationUpdates()
+        }//요기까지 잘 실행되면, 주기적으로 위치 갱신을 요청합니다~라고 구글 서비스에 알림->정상 작동하면
+        // 앱 위에 gps마커 나타남
 
     }
 
@@ -73,8 +89,18 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 supportFragmentManager.beginTransaction().replace(R.id.main_content,gridFragment).commit()
                 return true
             }
-            R.id.action_add_photo ->{
 
+            // mw : 카메라 권한 요청
+            // onCreate 에서 권한 요청시 Google Map 관련 라이브러리와 충돌이 일어남, 따로 뺌
+            R.id.action_add_photo ->{
+                if (ContextCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA), REQUEST_PERMISSION_CAMERA)
+                    Toast.makeText(this, "권한 승인 후 다시 한 번 카메라 버튼을 눌러주세요.", Toast.LENGTH_SHORT).show();
+                }else{
+                    val cameraIntent = Intent(this, CameraActivity::class.java);
+                    startActivity(cameraIntent)
+                }
                 return true
             }
             R.id.action_favorite_alarm ->{
@@ -88,18 +114,33 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             }
             R.id.action_account ->{
                 // 버튼 이벤트를 통해 현재 위치 찾기
-                if (checkPermissionForLocation(this)) {
-                    startLocationUpdates()
+
+                if(updatecheck==0){
+                    Toast.makeText(this, "아직 최신 위치가 갱신중입니다! 다시 시도해주세요", Toast.LENGTH_SHORT).show()
+                }
+
+                if (updatecheck==1) { //onLocationChanged 함수 구조를 한번 봐주세용~
+                    //DB에 (위도,경도,파일이름,클래스이름)의 덩어리로 객체를 집어넣을 것이므로~
+                    var contentValues = ContentValues()//각 속성들 값 묶어놓을 놈
+                    contentValues.put("lat", templat) //위도
+                    contentValues.put("long", templong) //경도
+                    contentValues.put("filename", "파일 이름") //파일 이름
+                    contentValues.put("class", "클래스") //클래스
+
+                    database.insert("location", null, contentValues)
+                    //contentValues로 묶여있는 속성 값들을 DB에 새 객체로 넣어줌
+                    Toast.makeText(this, "추가되었습니다.${templat}, ${templong}", Toast.LENGTH_SHORT).show()
                 }
                 //var userFragment = UserFragment()
                 //supportFragmentManager.beginTransaction().replace(R.id.main_content,userFragment).commit()
+
                 return true
             }
         }
         return false
     }
 
-
+    //여기부터 코드 끝까지는 GPS기능을 사용하기 위해 써줘야 하는 함수(서로 연결되어 있으므로, 한 덩어리라고 생각해도 좋음)
     private fun startLocationUpdates() {
         //FusedLocationProviderClient의 인스턴스를 생성.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -135,14 +176,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     // 시스템으로 부터 받은 위치정보를 화면에 갱신해주는 메소드
     fun onLocationChanged(location: Location) {
         mLastLocation = location
-        templat = mLastLocation.latitude + 0.0001 // 갱신 된 위도
-        templong = mLastLocation.longitude + 0.0001 // 갱신 된 경도
-
-        var contentValues = ContentValues()
-        contentValues.put("lat", templat)
-        contentValues.put("long", templong)
-        database.insert("location", null, contentValues)
-        Toast.makeText(this, "추가되었습니다.${templat}, ${templong}", Toast.LENGTH_SHORT).show()
+        templat = mLastLocation.latitude + 0.0001 // 갱신된 위도
+        templong = mLastLocation.longitude + 0.0001 // 갱신된 경도
+        updatecheck = 1 //templat,templong에 최신 위치가 갱신 완료되었음을 체크하기 위해
     }
 
     // 위치 권한이 있는지 확인하는 메서드
@@ -179,6 +215,10 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             } else {
                 Log.d("ttt", "onRequestPermissionsResult() _ 권한 허용 거부")
                 Toast.makeText(this, "권한이 없어 해당 기능을 실행할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }else if(requestCode == REQUEST_PERMISSION_CAMERA){
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) { //거부
+                Toast.makeText(this@MainActivity, "카메라 권한이 거부됨", Toast.LENGTH_SHORT).show()
             }
         }
     }
