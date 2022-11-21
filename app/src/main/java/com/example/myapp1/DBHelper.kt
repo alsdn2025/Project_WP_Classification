@@ -10,10 +10,14 @@ class DBHelper(
     version: Int
 ): SQLiteOpenHelper(context, name, factory, version){
     override fun onCreate(db: SQLiteDatabase) {
-        var sql: String = "CREATE TABLE if not exists location(" +
-                "id integer primary key autoincrement," +
-                "lat real,"+
-                "long real);"
+        var sql: String = "CREATE TABLE if not exists location(" + //location 테이블 만들기
+                "id integer primary key autoincrement," + //id속성은 키속성, 자동 할당
+                "lat real,"+ //실수형의 lat 속성 위도 저장용
+                "long real,"+ //실수형의 long 속성 경도 저장용
+                "filename text,"+ // 문자열 형의 fileName 속성 파일 이름 저장용
+                "class text," + // 문자열 형의 class 속성 클래스 이름 저장용
+                "comment text);" // comment 저장용
+//                "class text);"
         db.execSQL(sql)
     }
 
