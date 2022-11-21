@@ -34,6 +34,9 @@ android {
     viewBinding{
         enabled = true
     }
+    dataBinding{
+        enabled = true
+    }
 }
 
 dependencies {
@@ -43,12 +46,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.github.bumptech.glide:glide:4.14.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.google.android.gms:play-services:12.0.1'
     // TF-Lite & TF-Lite-Support
     implementation 'org.tensorflow:tensorflow-lite:2.5.0'
     implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-//    implementation 'com.google.android.gms:play-services:12.0.1'
+    implementation 'com.google.android.gms:play-services:12.0.1'
 }
