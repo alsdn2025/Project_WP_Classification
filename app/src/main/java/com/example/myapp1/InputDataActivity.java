@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +23,12 @@ import android.widget.Toast;
 
 import com.example.myapp1.Cam.CameraActivity;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,11 +44,14 @@ public class InputDataActivity extends FragmentActivity {
     private static final String TAG = "InputDataActivity";
     private ImageView imageView;
     private TextView output_textView;
+    private ImageView imageView_endangered;
     private PlantOrgans organ;
     private ClassifierWithTFLiteSupport classifier;
     private List<Map.Entry<String, Float>> outputList;
     private String fileName = "no file";
     private String filePath;
+    private List<String> list_title;
+    private List<String> list_endangered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +76,7 @@ public class InputDataActivity extends FragmentActivity {
         imageView = findViewById(R.id.imageView);
         output_textView = findViewById(R.id.output_textView);
         TextView organ_textView = findViewById(R.id.organ_textView);
+        imageView_endangered = findViewById(R.id.imageView2);
 
         Intent intent = getIntent();
         // Get organ from SearchFragment( MainActivity )
@@ -84,6 +94,47 @@ public class InputDataActivity extends FragmentActivity {
             Log.e(TAG,"Classifier initiating error");
             e.printStackTrace();
         }
+
+        // 멸종위기종일 경우 체크 표시
+        list_title = new ArrayList<>();
+        list_endangered = new ArrayList<>();
+        String json = null;
+
+        try {
+            // json파일 접근
+            InputStream is = getResources().getAssets().open("dictionary.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+
+            // json파일 안의 객체와 배열에 접근
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray array = jsonObject.getJSONArray("plant");
+
+            for(int i = 0; i < array.length(); i++) {
+
+                JSONObject o = array.getJSONObject(i);
+
+                String item = new String(
+                        o.getString("endangered")
+                );
+
+                list_endangered.add(item);
+
+                String item2 = new String(
+                        o.getString("title")
+                );
+
+                list_title.add(item2);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -234,6 +285,7 @@ public class InputDataActivity extends FragmentActivity {
             Uri selectedImage = data.getData();
             displayImageNameFromUri(selectedImage);
             requestClassifying(selectedImage);
+            printEndangered();
 
             // 카메라
         }else if(resultCode == Activity.RESULT_OK && requestCode == CAMERA_IMAGE_REQUEST_CODE){
@@ -277,8 +329,26 @@ public class InputDataActivity extends FragmentActivity {
 
             imageView.setImageBitmap(bitmap);
             output_textView.setText(resultStr);
+
         }else{
             Log.e(TAG,"Bitmap is null Object");
+        }
+    }
+
+    // 멸종위기종 표시
+    private void printEndangered(){
+
+        for (int i = 0; i < list_title.size(); i++)
+        {
+            if (list_title.get(i).equals(outputList.get(0).getKey()))
+            {
+                if (list_endangered.get(i).equals("Y"))
+                {
+                    imageView_endangered.setVisibility(View.VISIBLE);
+                }
+
+                break;
+            }
         }
     }
 }

@@ -12,9 +12,10 @@
 
     <ImageView
         android:id="@+id/imgSrc"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:src="@drawable/ic_yezi"
+        android:alpha="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

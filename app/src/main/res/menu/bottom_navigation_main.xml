@@ -22,8 +22,8 @@
         android:title="map"/>
     <item
         android:id="@+id/action_account"
-        android:icon="@drawable/ic_account"
+        android:icon="@drawable/ic_collection2"
         android:enabled="true"
-        android:title="account"/>
+        android:title="collection"/>
 
 </menu>
