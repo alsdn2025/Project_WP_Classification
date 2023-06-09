@@ -8,6 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!--mw : for collection -->
+    <color name="milkGreen">#bcfaa7</color>
+    <color name="lightYellowWhite">#f7f5be</color>
+
     <color name="colorPrimary">#ededed</color>
     <color name="colorPrimaryDark">#e1e1e1</color>
     <color name="colorLightGray">#f1f1f1</color>

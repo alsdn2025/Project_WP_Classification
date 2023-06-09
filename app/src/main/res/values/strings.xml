@@ -53,7 +53,7 @@
     <item name="visible" type="id" />
     <item name="masked" type="id" />
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Collection">Collection</string>
 
     <!--  For Inference feature / MW  -->
     <string name="gallery_not_use">Gallery(Not Use)</string>
@@ -65,4 +65,6 @@
     <string name="filename">fileName</string>
     <string name="result">Result</string>
     <string name="detail">Detailed results</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -49,11 +49,12 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * MW:  Modified logic flow [camera] -> [inference] Right away
+ * MW: comments
+ * 염곤씨 카메라 수정사항 ( 11/28 ) 반영 안함, 이번 주 진척사항 마무리 후 반영 예정
+ * Yeomgon 的相机修复 ( 11/28 ) 不会反映，完成本周进度后会反映
  */
 public class CameraActivity extends AppCompatActivity {
-    // MW : record selected organ for naming the file
-    private PlantOrgans selectedOrgan = PlantOrgans.LEAF;
+    private PlantOrgans selectedOrgan = PlantOrgans.LEAF; // MW : record selected organ for naming the file
 
     //초점 보기
     private OverCameraView mOverCameraView;
@@ -106,7 +107,7 @@ public class CameraActivity extends AppCompatActivity {
         imgCameraRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkAlbumPermission();
+                aa();
             }
         });
 
@@ -207,7 +208,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
-    // MW: Take a picture and save the picture to the gallery
+    //사진첩에 사진을 찍고 그림을 저장
     private void takePhoto(){
         isTakePhoto = true;
         //사진을 찍기 위해 카메라를 호출
@@ -220,14 +221,14 @@ public class CameraActivity extends AppCompatActivity {
         });
     }
 
-    // MW: Store pictures
+    //사진 저장
     private void savePhoto(){
         String fileName;
         if(Build.BRAND .equals("Xiaomi")){
-            Log.e("手机品牌","Xiaomi"); // MW: 휴대폰 브랜드 사진 저장 경로 테스트
-            // MW: current program path
+            Log.e("手机品牌","Xiaomi"); //휴대폰 브랜드 사진 저장 경로 테스트
+            //현재 프로그램 경로
             String name = DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA))+".jpg";
-            // MW: abs path
+            //절대 경로
             String printTxtPath = Environment.getExternalStorageDirectory() + "/DCIM/Camera/";
             fileName = printTxtPath+name;
         }else{
@@ -283,10 +284,10 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     /**
-     * MW: check album access permission( + sd card )
+     * 라이브러리
      * */
-    public void checkAlbumPermission(){
-        // SD 카드 읽기 권한을 동적으로 신청
+    public void aa(){
+        //SD 카드 읽기 권한을 동적으로 신청
         if (ContextCompat.checkSelfPermission(CameraActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(CameraActivity.this,
@@ -297,14 +298,14 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void openAlbum() {
-        // start preview
+        //미리 보기 시작
         preview.getCamera().startPreview();
         imageDada = null;
         isTakePhoto = false;
 
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        startActivityForResult(intent, CHOOSE_PHOTO); // open gallery
+        startActivityForResult(intent, CHOOSE_PHOTO); //사진첩 열기
     }
 
     @Override
@@ -326,9 +327,9 @@ public class CameraActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            // MW: Determining the mobile phone system version number
+            //휴대폰 시스템 버전 번호 판단
             if (Build.VERSION.SDK_INT >= 19) {
-                // MW: 4.4 and higher systems process photos using this method
+                //4.4 이상의 시스템은 이 방법을 사용하여 사진을 처리
                 handleImageOnKitKat(data);
             } else {
                 handleImageBeforeKitKat(data);
@@ -342,10 +343,10 @@ public class CameraActivity extends AppCompatActivity {
         String imagePath = null;
         Uri uri = data.getData();
         if(DocumentsContract.isDocumentUri(this,uri)){
-            /*In the case of document type Uri, process as document id*/
+            /*document 타입의 Uri인 경우 document id로 처리*/
             String docId = DocumentsContract.getDocumentId(uri);
             if("com.android.providers.media.documents".equals(uri.getAuthority())){
-                String id = docId.split(":")[1]; // CC: 숫자 형식의 아이디를 해석해 내다
+                String id = docId.split(":")[1]; //숫자 형식의 아이디를 해석해 내다
                 String selection = MediaStore.Images.Media._ID + "=" + id;
                 imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
             }else if("com.android.providers.downloads.documents".equals(uri.getAuthority())){
@@ -353,13 +354,13 @@ public class CameraActivity extends AppCompatActivity {
                 imagePath = getImagePath(contentUri,null);
             }
         }else if("content".equalsIgnoreCase(uri.getScheme())){
-            //If it is a content-type uri, it is handled in the normal way
+            //content 타입의 uri라면 일반 방식으로 처리
             imagePath = getImagePath(uri,null);
         }else if("file".equalsIgnoreCase(uri.getScheme())){
-            // If the uri is a file type, you can directly get the image path
+            //file 타입의 uri라면, 직접 이미지 경로를 얻으면 되다
             imagePath = uri.getPath();
         }
-        //MW: Show pictures according to picture path
+        //그림 경로에 따라 그림 보이기
         //upload(imagePath);
     }
 
@@ -369,12 +370,10 @@ public class CameraActivity extends AppCompatActivity {
         //upload(imagePath);
     }
 
-    /**
-     * Get absolute file(photo) path through Uri and selection
-     */
     @SuppressLint("Range")
     private String getImagePath(Uri uri, String selection){
         String path = null;
+        //Uri와 selection을 통해 실제 사진 경로 가져오기
         Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
         if(cursor != null){
             if (cursor.moveToFirst()){
@@ -401,7 +400,7 @@ public class CameraActivity extends AppCompatActivity {
                     mOverCameraView.setFoucuing(false);
                     mOverCameraView.disDrawTouchFocusRect();
                 };
-                // set focus timeout
+                //초점 시간 초과 설정
                 mHandler.postDelayed(mRunnable, 3000);
             }
         }
@@ -409,7 +408,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     /**
-     * 동 초점 콜백
+     * 설명: 자동 초점 콜백
      */
     private Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
         @Override
@@ -417,7 +416,7 @@ public class CameraActivity extends AppCompatActivity {
             isFoucing = false;
             mOverCameraView.setFoucuing(false);
             mOverCameraView.disDrawTouchFocusRect();
-            // 포커스 타임아웃 콜백 중지
+            //포커스 타임아웃 콜백 중지
             mHandler.removeCallbacks(mRunnable);
         }
     };
