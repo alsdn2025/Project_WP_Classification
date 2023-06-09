@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.File;
 
-/*
+/**
 * Usage : get absolute path from URI object(image file)
 * @author: MW
 * */
@@ -86,6 +86,7 @@ public class UriPathProvider {
         return null;
     }
 
+
     public static String getRemovableSDCardPath(Context context) {
         File[] storages = ContextCompat.getExternalFilesDirs(context, null);
         if (storages.length > 1 && storages[0] != null && storages[1] != null)
@@ -93,6 +94,7 @@ public class UriPathProvider {
         else
             return "";
     }
+
 
     public static String getDataColumn(Context context, Uri uri,
                                        String selection, String[] selectionArgs) {
@@ -121,20 +123,24 @@ public class UriPathProvider {
         return null;
     }
 
+
     public static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri
                 .getAuthority());
     }
+
 
     public static boolean isDownloadsDocument(Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri
                 .getAuthority());
     }
 
+
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri
                 .getAuthority());
     }
+
 
     public static boolean isGooglePhotosUri(Uri uri) {
         return "com.google.android.apps.photos.content".equals(uri

@@ -11,6 +11,9 @@ import com.example.myapp1.InputDataActivity
 import com.example.myapp1.PlantOrgans
 import com.example.myapp1.R
 
+/**
+ * @author TJ
+ */
 class SearchFragment :Fragment(){
 
     override fun onCreateView(
