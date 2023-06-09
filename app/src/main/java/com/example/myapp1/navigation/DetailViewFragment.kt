@@ -18,8 +18,10 @@ import java.io.File
 import java.util.ArrayList
 
 
+/**
+ * @author TJ
+ */
 class DetailViewFragment :Fragment(){
-
     private val DB_PATH = "/data/data/com.example.myapp1/databases/"
     private val DB_NAME = "mw_temp.db"
     private val IMAGE_PATH = "/sdcard/DCIM/WP_Classification/"
@@ -68,12 +70,12 @@ class DetailViewFragment :Fragment(){
             // println(contentDTOs.toString())
 
             //초기 default값 설정
-            idList.add(1234567890)
-            latList.add(1.0)
-            longList.add(2.0)
-            fileNameList.add("test filename")
-            classNameList.add("식물의 이름")
-            commentList.add("이곳에는 여러분의 코멘트가 적힐 장소입니다.")
+            //idList.add(1234567890)
+            //latList.add(1.0)
+            //longList.add(2.0)
+            //fileNameList.add("test filename")
+            //classNameList.add("식물의 이름")
+            //commentList.add("이곳에는 여러분의 코멘트가 적힐 장소입니다.")
 
 
             val query = "SELECT * FROM location"
@@ -92,6 +94,14 @@ class DetailViewFragment :Fragment(){
                     classNameList.add(cursor.getString(cursor.getColumnIndex("class")))
                     commentList.add(cursor.getString(cursor.getColumnIndex("comment")))
                 }
+
+                idList.reverse()
+                latList.reverse()
+                longList.reverse()
+                fileNameList.reverse()
+                classNameList.reverse()
+                commentList.reverse()
+
                 notifyDataSetChanged()
             }
         }
@@ -129,7 +139,7 @@ class DetailViewFragment :Fragment(){
             //viewholder.findViewById<TextView>(R.id.detailviewitem_favoritecounter_textview).text = "Likes " + contentDTOs!![position].favoriteCount
 
             //ProfileImage
-            Glide.with(holder.itemView.context).load(R.drawable.logo_team2).into(viewholder.findViewById(R.id.detailviewitem_profile_image))
+            //Glide.with(holder.itemView.context).load(R.drawable.logo_team2).into(viewholder.findViewById(R.id.detailviewitem_profile_image))
         }
 
         override fun getItemCount(): Int {
