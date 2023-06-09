@@ -2,9 +2,14 @@ package com.example.myapp1;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +18,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.fragment.app.DialogFragment;
-
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -23,26 +28,28 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 
 /**
- * Use the {@link PostingFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment for: Post inference results
+ * @author MW
  */
 public class PostingFragment extends DialogFragment implements View.OnClickListener {
+    public static final int REQUEST_LOCATION_PERMISSION_CODE = 100;
     public static final String TAG = "PostingFragment";
     public static final String DB_NAME = "mw_temp.db"; // DB 이름, 임의로 지정함
-
     private static final String FILE_NAME = "FILE_NAME";
     private static final String ORGAN = "ORGAN";
     private static final String RESULT = "RESULT";
+
+    private SQLiteDatabase database;
+    TextInputEditText textInput;
+    private FusedLocationProviderClient fusedLocationProviderClient; // local location Provider
 
     private String fileName;
     private String organ;
     private String result;
     private String classNumber;
     private String className;
-
-    private DBHelper dbHelper;
-    private SQLiteDatabase database;
-    TextInputEditText textInput;
+    private double latitude = 0.0;
+    private double longitude = 0.0;
 
     public PostingFragment() {}
 
@@ -71,8 +78,10 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
             this.fileName = getArguments().getString(FILE_NAME);
             this.result = getArguments().getString(RESULT);
             this.organ = getArguments().getString(ORGAN);
-
         }
+
+        checkPermissions(); // 위치 권한 요청
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
     // View 가 만들어진 이후 호출됨
@@ -99,20 +108,34 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         // 임시로 DB 데이터 확인차 만들어 놓음
         // 버튼 클릭시 DB 데이터를 하나씩 읽어 Log 로 출력
         Button checkDBBtn = view.findViewById(R.id.checkBtn);
-        checkDBBtn.setOnClickListener(tempView->checkDB());
+        checkDBBtn.setOnClickListener(tempView -> checkDB());
 
         // DB 초기화
         // DB 이름 static 으로 임의로 지정
-        dbHelper = new DBHelper(this.getContext(), DB_NAME, null, 1);
+        DBHelper dbHelper = new DBHelper(this.getContext(), DB_NAME, null, 1);
         database = dbHelper.getWritableDatabase();
+
+        getLocation(); // 위치 정보 요청
         return view;
+    }
+
+    // 위치 권한을 체크하고 없으면 요청하는 메서드
+    private void checkPermissions(){
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            String[] permissions = new String[2];
+            permissions[0] = android.Manifest.permission.ACCESS_FINE_LOCATION;
+            permissions[1] = android.Manifest.permission.ACCESS_COARSE_LOCATION;
+            ActivityCompat.requestPermissions(getActivity(), permissions,REQUEST_LOCATION_PERMISSION_CODE );
+        }
     }
 
     // 임시로 만듦
     // DB에 저장된 데이터를 모두 읽어오는 메서드, Logcat 에서 파라미터로 Verbose 선택해야 보임
     @SuppressLint("Range")
-    public void checkDB(){
-        Log.i(TAG,"DB를 읽어옵니다!");
+    public void checkDB() {
+        Log.i(TAG, "DB를 읽어옵니다!");
         List<Integer> idList = new ArrayList<>();
         List<Double> latList = new ArrayList<>(); // 위도
         List<Double> longList = new ArrayList<>(); // 경도
@@ -122,7 +145,7 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
 
         String query = "SELECT * FROM location";
         Cursor cursor = database.rawQuery(query, null);
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             idList.add(cursor.getInt(cursor.getColumnIndex("id")));
             latList.add(cursor.getDouble(cursor.getColumnIndex("lat"))); //위도용 테이블에 이번 위도값 저장
             longList.add(cursor.getDouble(cursor.getColumnIndex("long"))); //경도용 테이블에 이번 경도값 저장
@@ -133,8 +156,8 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
 
         StringBuilder sb = new StringBuilder();
         sb.append("------------------------").append(System.lineSeparator());
-        try{
-            for(int i = 0; i < latList.size(); i++){
+        try {
+            for (int i = 0; i < latList.size(); i++) {
                 sb.append(idList.get(i)).append(" ")
                         .append(latList.get(i)).append(" ")
                         .append(longList.get(i)).append(" ")
@@ -144,8 +167,7 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
                         .append(commentList.get(i)).append(System.lineSeparator());
             }
             Log.i(TAG, sb.toString());
-        }catch (Exception e){
-            Log.e(TAG, "147 라인");
+        } catch (Exception e) {
             Log.e(TAG, e.getMessage());
             cursor.close();
         }
@@ -154,14 +176,41 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         cursor.close();
     }
 
+    // usage : get last location( latitude, longitude )
+    private void getLocation(){
+        try{
+            checkPermissions();
+            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(getActivity(), location -> {
+                if (location != null) {
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
+                }else {
+                    throw new SecurityException();
+                }
+            });
+        }catch (SecurityException e){
+            Log.e(TAG, "-getLocation() : failed to get location");
+            Log.e(TAG, e.getMessage());
+            Toast.makeText(this.getContext(), "위치를 가져올 수 없습니다. 위치 기능이 꺼져 있는지, 위치 권한을 수락했는지 확인해주세요.",Toast.LENGTH_SHORT).show();
+            dismiss();
+        }
+    }
+
     // 포스팅 버튼 클릭시 DB에 결과 데이터를 저장하는 메서드
     @Override
     public void onClick(View view) {
-        String comment = Objects.requireNonNull(this.textInput.getText()).toString();
+        String comment = Objects.requireNonNull(this.textInput.getText()).toString(); // comment
+
+        // 위도 경도가 모두 0.0 이면 제대로 위치를 받아오지 못했다고 판단, DB에 저장하지 않고 종료
+        if(latitude == 0.0 && longitude == 0.0){
+            Toast.makeText(this.getContext(), "위치 경도가 0.0입니다. 위치 기능이 꺼져 있는지, 위치 권한을 수락했는지 확인해주세요.",Toast.LENGTH_SHORT).show();
+            dismiss();
+        }
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put("lat", 0.01); // 위도
-        contentValues.put("long", 0.02); // 경도
+        // 지도상 아예 겹치는 것을 방지하기 위해 임시로 random 이용
+        contentValues.put("lat", latitude + (Math.random()-0.5)*0.001); // 위도
+        contentValues.put("long", longitude + (Math.random()-0.5)*0.001); // 경도
         contentValues.put("filename", fileName); // 파일 이름
         contentValues.put("class", className); // 클래스명
         contentValues.put("comment", comment); // 사용자가 입력한 코멘트
