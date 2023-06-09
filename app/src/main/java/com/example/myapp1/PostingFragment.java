@@ -85,7 +85,17 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
-    // View 가 만들어진 이후 호출됨
+    /**
+     * View 가 만들어진 이후 호출됨
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -120,7 +130,9 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         return view;
     }
 
-    // 위치 권한을 체크하고 없으면 요청하는 메서드
+    /**
+     * 위치 권한을 체크하고 없으면 요청하는 메서드
+     */
     private void checkPermissions(){
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
@@ -132,8 +144,10 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         }
     }
 
-    // 임시로 만듦
-    // DB에 저장된 데이터를 모두 읽어오는 메서드, Logcat 에서 파라미터로 Verbose 선택해야 보임
+    /**
+     * DB 확인을 위해 임시로 제작
+     * DB에 저장된 데이터를 모두 읽어오는 메서드, Logcat 에서 파라미터로 Verbose 선택해야 보임
+     */
     @SuppressLint("Range")
     public void checkDB() {
         Log.i(TAG, "DB를 읽어옵니다!");
@@ -177,7 +191,9 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         cursor.close();
     }
 
-    // usage : get last location( latitude, longitude )
+    /**
+     * get last location( latitude, longitude )
+     */
     private void getLocation(){
         try{
             checkPermissions();
@@ -198,7 +214,9 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
     }
 
 
-    // MW: delete latest data from db
+    /**
+     * delete latest data from db
+     */
     public void deleteData(){
         int lastIndex = dbHelper.getLastIndex();
         if(lastIndex <= 0){
@@ -211,12 +229,14 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         database = dbHelper.getWritableDatabase();
     }
 
-    // MW: 포스팅 버튼 클릭시 DB에 결과 데이터를 저장하는 메서드
+    /**
+     *  포스팅 버튼 클릭시 DB에 결과 데이터를 저장하는 메서드
+     */
     @Override
     public void onClick(View view) {
         String comment = Objects.requireNonNull(this.textInput.getText()).toString(); // comment
 
-        // delete last raw data
+        // delete last raw data ( ONLY FOR DEVELOPMENT)
         if(comment.equals("delete")){
             deleteData();
             return;
