@@ -1,5 +1,10 @@
 package com.example.myapp1.Cam;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -7,6 +12,8 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
@@ -24,13 +31,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
+import com.example.myapp1.InputDataActivity;
 import com.example.myapp1.PlantOrgans;
 import com.example.myapp1.R;
+import com.example.myapp1.Cam.BitmapUtils;
+import com.example.myapp1.Cam.CameraPreview;
+import com.example.myapp1.Cam.OverCameraView;
 
 import org.jetbrains.annotations.Contract;
 
@@ -42,8 +48,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * MW:  Modified logic flow [camera] -> [inference] Right away
+ */
 public class CameraActivity extends AppCompatActivity {
-    private PlantOrgans selectedOrgan = PlantOrgans.LEAF; // MW : record selected organ for naming the file
+    // MW : record selected organ for naming the file
+    private PlantOrgans selectedOrgan = PlantOrgans.LEAF;
 
     //초점 보기
     private OverCameraView mOverCameraView;
@@ -96,40 +106,66 @@ public class CameraActivity extends AppCompatActivity {
         imgCameraRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                aa();
+                checkAlbumPermission();
             }
         });
-        tvLeaf.setSelected(true);
-        tvLeaf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectedOrgan = PlantOrgans.LEAF; // MW : record selected organ for naming the file
-                tvLeaf.setSelected(true);
-                tvFlower.setSelected(false);
-                tvFruit.setSelected(false);
-                imgSrc.setImageResource(R.drawable.ic_yezi);
+
+        /////////////////////////////////////////////////////////////////////
+        // MW: Get organ from InputDataActivity
+        Intent intent = getIntent();
+        if(intent.hasExtra("organ")){
+            switch((PlantOrgans) intent.getSerializableExtra("organ")){
+                case LEAF:
+                    selectedOrgan = PlantOrgans.LEAF;
+                    tvLeaf.setSelected(true);
+                    imgSrc.setImageResource(R.drawable.ic_yezi);
+                    break;
+                case FLOWER:
+                    selectedOrgan = PlantOrgans.FLOWER;
+                    tvFlower.setSelected(true);
+                    imgSrc.setImageResource(R.drawable.ic_hua);
+                    break;
+                case FRUIT:
+                    selectedOrgan = PlantOrgans.FRUIT;
+                    tvFruit.setSelected(true);
+                    imgSrc.setImageResource(R.drawable.ic_guo);
+                    break;
+                default:
             }
-        });
-        tvFlower.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectedOrgan = PlantOrgans.FLOWER;
-                tvLeaf.setSelected(false);
-                tvFlower.setSelected(true);
-                tvFruit.setSelected(false);
-                imgSrc.setImageResource(R.drawable.ic_hua);
-            }
-        });
-        tvFruit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectedOrgan = PlantOrgans.FRUIT;
-                tvLeaf.setSelected(false);
-                tvFlower.setSelected(false);
-                tvFruit.setSelected(true);
-                imgSrc.setImageResource(R.drawable.ic_guo);
-            }
-        });
+        }else{
+            tvLeaf.setSelected(true);
+            tvLeaf.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedOrgan = PlantOrgans.LEAF; // MW : record selected organ for naming the file
+                    tvLeaf.setSelected(true);
+                    tvFlower.setSelected(false);
+                    tvFruit.setSelected(false);
+                    imgSrc.setImageResource(R.drawable.ic_yezi);
+                }
+            });
+            tvFlower.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedOrgan = PlantOrgans.FLOWER; // MW : record selected organ for naming the file
+                    tvLeaf.setSelected(false);
+                    tvFlower.setSelected(true);
+                    tvFruit.setSelected(false);
+                    imgSrc.setImageResource(R.drawable.ic_hua);
+                }
+            });
+            tvFruit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedOrgan = PlantOrgans.FRUIT; // MW : record selected organ for naming the file
+                    tvLeaf.setSelected(false);
+                    tvFlower.setSelected(false);
+                    tvFruit.setSelected(true);
+                    imgSrc.setImageResource(R.drawable.ic_guo);
+                }
+            });
+        }
+        //////////////////////////////////////////////////////////////////////////////
     }
 
     @Override
@@ -171,7 +207,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
-    //사진첩에 사진을 찍고 그림을 저장
+    // MW: Take a picture and save the picture to the gallery
     private void takePhoto(){
         isTakePhoto = true;
         //사진을 찍기 위해 카메라를 호출
@@ -184,20 +220,20 @@ public class CameraActivity extends AppCompatActivity {
         });
     }
 
-    //사진 저장
+    // MW: Store pictures
     private void savePhoto(){
         String fileName;
         if(Build.BRAND .equals("Xiaomi")){
-            Log.e("手机品牌","Xiaomi"); //휴대폰 브랜드 사진 저장 경로 테스트
-            //현재 프로그램 경로
+            Log.e("手机品牌","Xiaomi"); // MW: 휴대폰 브랜드 사진 저장 경로 테스트
+            // MW: current program path
             String name = DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA))+".jpg";
-            //절대 경로
+            // MW: abs path
             String printTxtPath = Environment.getExternalStorageDirectory() + "/DCIM/Camera/";
             fileName = printTxtPath+name;
         }else{
             Log.e("手机品牌","qita"); // MW: 手机品牌 = '브랜드' 라는 의미인듯
             String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss").format(new Date());
-            timeStamp = timeStamp.replaceAll(":", "."); // MW: ':' causes some error, replace to '.'
+            timeStamp = timeStamp.replaceAll(":", "_"); // MW: ':' causes some error, replace to '_'
             String bitName = selectedOrganToString() + "_" + timeStamp + ".jpg"; // MW : Add organ info into image file name
 
             // MW: if an error occur, 'try File.pathSeparator' instead of '/'
@@ -218,6 +254,16 @@ public class CameraActivity extends AppCompatActivity {
         try {
             fos = new FileOutputStream(file);
             fos.write(imageDada,0, imageDada.length);
+
+            //////////////////////////////////////////////////////
+            // MW : set image uri for InputDataActivity
+            Intent intent = new Intent();
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("imageUri", Uri.fromFile(file));
+            intent.putExtra("bundle", bundle);
+            setResult(RESULT_OK, intent);
+            /////////////////////////////////////////////////////
+
         }catch (Exception e){
             e.printStackTrace();
             Log.e("Exception  ","e "+e);
@@ -233,13 +279,14 @@ public class CameraActivity extends AppCompatActivity {
             }
         }
         this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + fileName)));
+        finish();
     }
 
     /**
-     * 라이브러리
+     * MW: check album access permission( + sd card )
      * */
-    public void aa(){
-        //SD 카드 읽기 권한을 동적으로 신청
+    public void checkAlbumPermission(){
+        // SD 카드 읽기 권한을 동적으로 신청
         if (ContextCompat.checkSelfPermission(CameraActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(CameraActivity.this,
@@ -250,14 +297,14 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void openAlbum() {
-        //미리 보기 시작
+        // start preview
         preview.getCamera().startPreview();
         imageDada = null;
         isTakePhoto = false;
 
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        startActivityForResult(intent, CHOOSE_PHOTO); //사진첩 열기
+        startActivityForResult(intent, CHOOSE_PHOTO); // open gallery
     }
 
     @Override
@@ -279,13 +326,14 @@ public class CameraActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            //휴대폰 시스템 버전 번호 판단
+            // MW: Determining the mobile phone system version number
             if (Build.VERSION.SDK_INT >= 19) {
-                //4.4 이상의 시스템은 이 방법을 사용하여 사진을 처리
+                // MW: 4.4 and higher systems process photos using this method
                 handleImageOnKitKat(data);
             } else {
                 handleImageBeforeKitKat(data);
             }
+
         }
     }
 
@@ -294,10 +342,10 @@ public class CameraActivity extends AppCompatActivity {
         String imagePath = null;
         Uri uri = data.getData();
         if(DocumentsContract.isDocumentUri(this,uri)){
-            /*document 타입의 Uri인 경우 document id로 처리*/
+            /*In the case of document type Uri, process as document id*/
             String docId = DocumentsContract.getDocumentId(uri);
             if("com.android.providers.media.documents".equals(uri.getAuthority())){
-                String id = docId.split(":")[1]; //숫자 형식의 아이디를 해석해 내다
+                String id = docId.split(":")[1]; // CC: 숫자 형식의 아이디를 해석해 내다
                 String selection = MediaStore.Images.Media._ID + "=" + id;
                 imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
             }else if("com.android.providers.downloads.documents".equals(uri.getAuthority())){
@@ -305,13 +353,13 @@ public class CameraActivity extends AppCompatActivity {
                 imagePath = getImagePath(contentUri,null);
             }
         }else if("content".equalsIgnoreCase(uri.getScheme())){
-            //content 타입의 uri라면 일반 방식으로 처리
+            //If it is a content-type uri, it is handled in the normal way
             imagePath = getImagePath(uri,null);
         }else if("file".equalsIgnoreCase(uri.getScheme())){
-            //file 타입의 uri라면, 직접 이미지 경로를 얻으면 되다
+            // If the uri is a file type, you can directly get the image path
             imagePath = uri.getPath();
         }
-        //그림 경로에 따라 그림 보이기
+        //MW: Show pictures according to picture path
         //upload(imagePath);
     }
 
@@ -321,10 +369,12 @@ public class CameraActivity extends AppCompatActivity {
         //upload(imagePath);
     }
 
+    /**
+     * Get absolute file(photo) path through Uri and selection
+     */
     @SuppressLint("Range")
     private String getImagePath(Uri uri, String selection){
         String path = null;
-        //Uri와 selection을 통해 실제 사진 경로 가져오기
         Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
         if(cursor != null){
             if (cursor.moveToFirst()){
@@ -351,7 +401,7 @@ public class CameraActivity extends AppCompatActivity {
                     mOverCameraView.setFoucuing(false);
                     mOverCameraView.disDrawTouchFocusRect();
                 };
-                //초점 시간 초과 설정
+                // set focus timeout
                 mHandler.postDelayed(mRunnable, 3000);
             }
         }
@@ -359,7 +409,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     /**
-     * 설명: 자동 초점 콜백
+     * 동 초점 콜백
      */
     private Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
         @Override
@@ -367,7 +417,7 @@ public class CameraActivity extends AppCompatActivity {
             isFoucing = false;
             mOverCameraView.setFoucuing(false);
             mOverCameraView.disDrawTouchFocusRect();
-            //포커스 타임아웃 콜백 중지
+            // 포커스 타임아웃 콜백 중지
             mHandler.removeCallbacks(mRunnable);
         }
     };
