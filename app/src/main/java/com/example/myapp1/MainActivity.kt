@@ -1,24 +1,24 @@
 package com.example.myapp1
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.location.Location
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapp1.Cam.CameraActivity
 import com.example.myapp1.databinding.ActivityMainBinding
+import com.example.myapp1.navigation.CollectionFragment
+import com.example.myapp1.navigation.CollectionManager
 import com.example.myapp1.navigation.DetailViewFragment
 import com.example.myapp1.navigation.SearchFragment
 import com.google.android.gms.location.*
@@ -73,6 +73,10 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         }//요기까지 잘 실행되면, 주기적으로 위치 갱신을 요청합니다~라고 구글 서비스에 알림->정상 작동하면
         // 앱 위에 gps마커 나타남
 
+
+        // CollectionManager (singleton class)
+        val manager: CollectionManager = CollectionManager.getInstance()
+        manager.init(this)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -111,26 +115,8 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 return true
             }
             R.id.action_account ->{
-                // 버튼 이벤트를 통해 현재 위치 찾기
-
-                if(updatecheck==0){
-                    Toast.makeText(this, "아직 최신 위치가 갱신중입니다! 다시 시도해주세요", Toast.LENGTH_SHORT).show()
-                }
-
-                if (updatecheck==1) { //onLocationChanged 함수 구조를 한번 봐주세용~
-                    //DB에 (위도,경도,파일이름,클래스이름)의 덩어리로 객체를 집어넣을 것이므로~
-                    var contentValues = ContentValues()//각 속성들 값 묶어놓을 놈
-                    contentValues.put("lat", templat) //위도
-                    contentValues.put("long", templong) //경도
-                    contentValues.put("filename", "파일 이름") //파일 이름
-                    contentValues.put("class", "클래스") //클래스
-
-                    database.insert("location", null, contentValues)
-                    //contentValues로 묶여있는 속성 값들을 DB에 새 객체로 넣어줌
-                    Toast.makeText(this, "추가되었습니다.${templat}, ${templong}", Toast.LENGTH_SHORT).show()
-                }
-                //var userFragment = UserFragment()
-                //supportFragmentManager.beginTransaction().replace(R.id.main_content,userFragment).commit()
+                var collectionFragment = CollectionFragment()
+                supportFragmentManager.beginTransaction().replace(R.id.main_content,collectionFragment).commit()
 
                 return true
             }
