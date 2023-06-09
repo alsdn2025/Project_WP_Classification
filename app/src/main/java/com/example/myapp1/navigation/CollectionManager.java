@@ -58,11 +58,6 @@ public class CollectionManager {
     public static CollectionManager getInstance() {
         if (instance == null) {
             synchronized(CollectionManager.class) {
-                Log.e(TAG,"----------------------------");
-                Log.e(TAG,"----------------------------");
-                Log.e(TAG,"CollectionManager Created");
-                Log.e(TAG,"----------------------------");
-                Log.e(TAG,"----------------------------");
                 instance = new CollectionManager();
             }
         }
