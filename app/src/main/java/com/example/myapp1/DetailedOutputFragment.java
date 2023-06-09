@@ -63,6 +63,7 @@ public class DetailedOutputFragment extends DialogFragment implements View.OnCli
         closeBtn.setOnClickListener(this);
         TextView filenameTextView = view.findViewById(R.id.filename_textview);
         TextView textView = view.findViewById(R.id.textView);
+        TextView dictView = view.findViewById(R.id.dict_textview);
 
         filenameTextView.setText(fileName);
         textView.setText(probabilities);

@@ -17,6 +17,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment for Dictionary,
+ * used an external party's library, See readme.md
+ * @author MW
+ */
 public class DictionaryFragment extends DialogFragment implements View.OnClickListener {
     public static final String TAG = "DictionaryFragment";
     private static final String OUTPUT = "OUTPUT";
