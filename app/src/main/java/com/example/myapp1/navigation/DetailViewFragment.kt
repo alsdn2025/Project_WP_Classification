@@ -1,5 +1,7 @@
 package com.example.myapp1.navigation
 
+import android.annotation.SuppressLint
+import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +13,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp1.R
 import com.example.myapp1.navigation.model.ContentDTO
+import android.database.sqlite.SQLiteDatabase
+import java.io.File
+import java.util.ArrayList
+
 
 class DetailViewFragment :Fragment(){
+
+    private val DB_PATH = "/data/data/com.example.myapp1/databases/"
+    private val DB_NAME = "mw_temp.db"
+    private val IMAGE_PATH = "/sdcard/DCIM/WP_Classification/"
+
+    lateinit var database:SQLiteDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,28 +38,62 @@ class DetailViewFragment :Fragment(){
         return view
     }
 
+    @SuppressLint("Range")
     inner class DetailViewRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
-        var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
-        var contentUidList : ArrayList<String> = arrayListOf()
+        //var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
+        //var contentUidList : ArrayList<String> = arrayListOf()
+
+        val idList: MutableList<Int> = ArrayList()
+        val latList: MutableList<Double> = ArrayList() // 위도
+        val longList: MutableList<Double> = ArrayList() // 경도
+        val fileNameList: MutableList<String> = ArrayList() // 파일명
+        val classNameList: MutableList<String> = ArrayList() // 클래스명
+        val commentList: MutableList<String> = ArrayList()
 
         init{
 
-            contentDTOs.clear()
-            contentUidList.clear()
+            //contentDTOs.clear()
+            //contentUidList.clear()
 
-            contentDTOs.add(ContentDTO("2022년 3월 14일의 기록\n여기는 오스트리아.. 날씨가 너무 좋다...\n놀러가고싶다", "https://youimg1.tripcdn.com/target/10051f000001gsu1kA30F_D_1180_558.jpg?proc=source%2Ftrip",
-                "uid", "taejun", 10, 0))
-            contentUidList.add("hih")
+            //contentDTOs.add(ContentDTO("2022년 3월 14일의 기록\n여기는 오스트리아.. 날씨가 너무 좋다...\n놀러가고싶다", "https://youimg1.tripcdn.com/target/10051f000001gsu1kA30F_D_1180_558.jpg?proc=source%2Ftrip",
+            //    "uid", "taejun", 10, 0))
+            // contentUidList.add("hih")
 
-            contentDTOs.add(ContentDTO("2022년 11월 15일의 기록\nzzz...", "https://a.cdn-hotels.com/gdcs/production99/d638/1ed9319f-17d1-4f1b-be12-6ec1ea643a23.jpg?impolicy=fcrop&w=800&h=533&q=medium",
-                "uid", "taejun", 2, 0))
-            contentUidList.add("hih")
+            //contentDTOs.add(ContentDTO("2022년 11월 15일의 기록\nzzz...", "https://a.cdn-hotels.com/gdcs/production99/d638/1ed9319f-17d1-4f1b-be12-6ec1ea643a23.jpg?impolicy=fcrop&w=800&h=533&q=medium",
+            //    "uid", "taejun", 2, 0))
+            //contentUidList.add("hih")
 
-            notifyDataSetChanged()
+            //notifyDataSetChanged()
 
             // println(contentDTOs.toString())
 
+            //초기 default값 설정
+            idList.add(1234567890)
+            latList.add(1.0)
+            longList.add(2.0)
+            fileNameList.add("test filename")
+            classNameList.add("식물의 이름")
+            commentList.add("이곳에는 여러분의 코멘트가 적힐 장소입니다.")
 
+
+            val query = "SELECT * FROM location"
+            if (File(DB_PATH + DB_NAME).exists()) {
+                database = SQLiteDatabase.openDatabase(
+                    DB_PATH + DB_NAME,
+                    null,
+                    SQLiteDatabase.OPEN_READONLY
+                )
+                val cursor: Cursor = database.rawQuery(query, null)
+                while (cursor.moveToNext()) {
+                    idList.add(cursor.getInt(cursor.getColumnIndex("id")))
+                    latList.add(cursor.getDouble(cursor.getColumnIndex("lat")))
+                    longList.add(cursor.getDouble(cursor.getColumnIndex("long")))
+                    fileNameList.add(cursor.getString(cursor.getColumnIndex("filename")))
+                    classNameList.add(cursor.getString(cursor.getColumnIndex("class")))
+                    commentList.add(cursor.getString(cursor.getColumnIndex("comment")))
+                }
+                notifyDataSetChanged()
+            }
         }
 
         // 만들어진 viewholder가 없을때 생성하는 함수
@@ -65,13 +111,19 @@ class DetailViewFragment :Fragment(){
             var viewholder = (holder as CustomViewHolder).itemView
 
             //Id
-            viewholder.findViewById<TextView>(R.id.detailviewitem_profile_textview).text = contentDTOs!![position].userId
+            //  contentDTOs!![position].userId
+            viewholder.findViewById<TextView>(R.id.detailviewitem_classname_textview).text = classNameList[position]
+
+            viewholder.findViewById<TextView>(R.id.detailviewitem_location_textview).text =
+                "위치 : " + latList[position].toString() + " " + longList[position].toString()
 
             //Image
-            Glide.with(holder.itemView.context).load(contentDTOs!![position].imageUrl).into(viewholder.findViewById(R.id.detailviewitem_imageview_content))
-
+            //contentDTOs!![position].imageUrl
+//            Glide.with(holder.itemView.context).load(IMAGE_PATH+fileNameList[position]).into(viewholder.findViewById(R.id.detailviewitem_imageview_content))
+            // mw : image path test
+            Glide.with(holder.itemView.context).load(fileNameList[position]).into(viewholder.findViewById(R.id.detailviewitem_imageview_content))
             //Explain
-            viewholder.findViewById<TextView>(R.id.detailviewitem_explain_textview).text = contentDTOs!![position].explain
+            viewholder.findViewById<TextView>(R.id.detailviewitem_explain_textview).text = commentList[position]
 
             //likes
             //viewholder.findViewById<TextView>(R.id.detailviewitem_favoritecounter_textview).text = "Likes " + contentDTOs!![position].favoriteCount
@@ -81,7 +133,7 @@ class DetailViewFragment :Fragment(){
         }
 
         override fun getItemCount(): Int {
-            return contentDTOs.size
+            return idList.size
         }
 
     }

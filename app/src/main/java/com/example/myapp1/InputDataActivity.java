@@ -1,24 +1,26 @@
 package com.example.myapp1;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.myapp1.Cam.CameraActivity;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,16 +29,25 @@ import java.util.Map;
 
 /*
  * usage : 갤러리에서 사진을 꺼내어 추론 요청, 결과 표시
+ *
  * */
+
+/**
+ * usage : 갤러리에서 사진을 꺼내어 추론 요청, 결과 표시
+ * @author MW
+ */
 public class InputDataActivity extends FragmentActivity {
     public static final int GALLERY_IMAGE_REQUEST_CODE = 1;
+    public static final int CAMERA_IMAGE_REQUEST_CODE = 2;
+    public static final int CAMERA_PERMISSION_REQUEST_CODE = 3;
     private static final String TAG = "InputDataActivity";
     private ImageView imageView;
     private TextView output_textView;
     private PlantOrgans organ;
     private ClassifierWithTFLiteSupport classifier;
     private List<Map.Entry<String, Float>> outputList;
-    private String filename = "no file";
+    private String fileName = "no file";
+    private String filePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +56,9 @@ public class InputDataActivity extends FragmentActivity {
 
         Button selectBtn = findViewById(R.id.selectBtn);
         selectBtn.setOnClickListener(view -> getImageFromGallery());
+
+        Button cameraBtn = findViewById(R.id.cameraBtn);
+        cameraBtn.setOnClickListener(view -> getImageFromCamera());
 
         Button detailBtn = findViewById(R.id.detailBtn);
         detailBtn.setOnClickListener(view -> getDetailedOutputDialog());
@@ -57,6 +71,7 @@ public class InputDataActivity extends FragmentActivity {
         TextView organ_textView = findViewById(R.id.organ_textView);
 
         Intent intent = getIntent();
+        // Get organ from SearchFragment( MainActivity )
         organ = (PlantOrgans) intent.getSerializableExtra("organ");
         if(organ == null){
             Log.e(TAG, "Organ is empty, Create classifier with default constructor");
@@ -68,7 +83,7 @@ public class InputDataActivity extends FragmentActivity {
         try{
             classifier.init();
         }catch (IOException e){
-            Log.e(TAG,"Classifier initiate error");
+            Log.e(TAG,"Classifier initiating error");
             e.printStackTrace();
         }
     }
@@ -86,16 +101,40 @@ public class InputDataActivity extends FragmentActivity {
                 textView.setText("Leaf");
                 break;
             default:
-                textView.setText("Leaf(1_to_30)");
+                textView.setText("Default = Leaf(1_to_30)");
         }
     }
 
     private void getImageFromGallery(){
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*");
+        // Intent intent = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*");
+        // 경로 가져올시 Recent Images 에서 오류가 발생하여 아래처럼 MediaStore 를 이용하는 형태로 변경
+        Intent intent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         try{
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST_CODE); // deprecated
         }catch (Exception e){
             Log.e(TAG, "Failed to get Image from Gallery", e);
+        }
+    }
+
+
+    private void getImageFromCamera(){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        {
+            Log.e(TAG, "need to get Permissions");
+            String[] permissions = new String[1];
+            permissions[0] = android.Manifest.permission.CAMERA;
+            ActivityCompat.requestPermissions(this, permissions, CAMERA_PERMISSION_REQUEST_CODE );
+            Toast.makeText(this, "카메라 권한 승인 후 다시 눌러주세요.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(this, CameraActivity.class);
+        intent.putExtra("organ", organ);
+        try{
+            startActivityForResult(intent, CAMERA_IMAGE_REQUEST_CODE);
+        }catch (Exception e){
+            Log.e(TAG, "Failed to get Image from Camera", e);
         }
     }
 
@@ -114,13 +153,15 @@ public class InputDataActivity extends FragmentActivity {
             }
 
             FragmentManager fragmentManager = getSupportFragmentManager();
-            DetailedOutputFragment detailedOutputFragment =  DetailedOutputFragment.newInstance(filename, sb.toString());
+            DetailedOutputFragment detailedOutputFragment =  DetailedOutputFragment.newInstance(fileName, sb.toString());
             detailedOutputFragment.show(fragmentManager, DetailedOutputFragment.TAG);
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
         }
     }
 
+    // DB 및 메인 포스트에 추가하는 포스팅 다이얼로그 생성
+    // 추론 후에만 생성 가능
     private void getPostDialog(){
         if(outputList == null){
             Toast.makeText(this, "아직 추론을 하지 않았어요!", Toast.LENGTH_SHORT).show();
@@ -128,74 +169,105 @@ public class InputDataActivity extends FragmentActivity {
         }
         String result = outputList.get(0).getKey();
         FragmentManager fragmentManager = getSupportFragmentManager();
-        PostingFragment postingFragment = PostingFragment.newInstance(this.filename, result, this.organ);
+        PostingFragment postingFragment = PostingFragment.newInstance(this.filePath, result, this.organ);
         postingFragment.show(fragmentManager, PostingFragment.TAG);
-
     }
 
     // uri 객체로부터 파일 이름을 가져와 filename_text 뷰에 setText 하는 메서드
     // https://developer.android.com/training/secure-file-sharing/retrieve-info?hl=ko#java
+//    @SuppressLint("SetTextI18n")
+//    private void displayImageNameFromUri(Uri uri){
+//        /*
+//         * Get the file's content URI from the incoming Intent,
+//         * then query the server app to get the file's display name
+//         * and size.
+//         */
+//        Cursor returnCursor =
+//                getContentResolver().query(uri, null, null, null, null);
+//        /*
+//         * Get the column indexes of the data in the Cursor,
+//         * move to the first row in the Cursor, get the data,
+//         * and display it.
+//         */
+//        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+//        returnCursor.moveToFirst();
+//        TextView filename_textView = findViewById(R.id.filename_textview);
+//        this.fileName = returnCursor.getString(nameIndex);
+//
+//        filename_textView.setText("File name : " + fileName);
+//        returnCursor.close();
+//    }
+
+    // Uri 객체로부터 파일 경로와 파일 이름을 가져와 필드에 저장
     @SuppressLint("SetTextI18n")
     private void displayImageNameFromUri(Uri uri){
-        /*
-         * Get the file's content URI from the incoming Intent,
-         * then query the server app to get the file's display name
-         * and size.
-         */
-        Cursor returnCursor =
-                getContentResolver().query(uri, null, null, null, null);
-        /*
-         * Get the column indexes of the data in the Cursor,
-         * move to the first row in the Cursor, get the data,
-         * and display it.
-         */
-        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-        returnCursor.moveToFirst();
         TextView filename_textView = findViewById(R.id.filename_textview);
-        filename = returnCursor.getString(nameIndex);
-
-        filename_textView.setText("File name : " + filename);
-        returnCursor.close();
+        try{
+            filePath = UriPathProvider.getRealPathFromURI(this, uri);
+            fileName = filePath.substring(filePath.lastIndexOf("/")+1);
+            filename_textView.setText("File name : " + fileName);
+        }catch (NullPointerException e){
+            Log.e(TAG + "   displayImageNameFromUri() : ", e.getMessage());
+        }
     }
 
-    // Gallery 에서 이미지 선택 후 호출됨
+    // Gallery 에서 이미지 선택 후 or Camera 로 이미지 촬영 후 호출
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
+
+        // 갤러리
         if(resultCode == Activity.RESULT_OK && requestCode == GALLERY_IMAGE_REQUEST_CODE){
-            if(data == null)
-                return;
+            if(data == null) return;
 
             Uri selectedImage = data.getData();
-            Log.e(TAG, selectedImage.getPath()); // 파일 경로 테스트
             displayImageNameFromUri(selectedImage);
-            Bitmap bitmap = null;
+            requestClassifying(selectedImage);
 
-            // Image Uri -> Bitmap Object
-            try{
-                if(Build.VERSION.SDK_INT >= 29){
-                    ImageDecoder.Source src =
-                            ImageDecoder.createSource(getContentResolver(), selectedImage);
-                    bitmap = ImageDecoder.decodeBitmap(src);
-                } else{
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            // 카메라
+        }else if(resultCode == Activity.RESULT_OK && requestCode == CAMERA_IMAGE_REQUEST_CODE){
+            if(data == null) return;
+
+            Uri selectedImage;
+            if((selectedImage = data.getBundleExtra("bundle").getParcelable("imageUri")) != null){
+                displayImageNameFromUri(selectedImage);
+                try{
+                    requestClassifying(selectedImage);
+                }catch (NullPointerException e){
+                    Log.e(TAG + " requestClassifying() : ", "NULL POINTER EXCEPTION");
                 }
-            }catch (IOException e ){
-                Log.e(TAG, "Failed to read Image", e);
             }
+        }
+    }
 
-            // Inference
-            if(bitmap != null){
-                outputList = classifier.classify(bitmap);
-                String resultStr = String.format(Locale.ENGLISH,
-                        "Inferred class : %s " + System.lineSeparator() + "Probability : %.2f%%",
-                        outputList.get(0).getKey(), outputList.get(0).getValue() * 100);
+    // Classifier 에게 분류(추론) 요청
+    private void requestClassifying(Uri selectedImage){
+        Bitmap bitmap = null;
 
-                imageView.setImageBitmap(bitmap);
-                output_textView.setText(resultStr);
-            }else{
-                Log.e(TAG,"Bitmap is null Object");
+        // Image Uri -> Bitmap Object
+        try{
+            if(Build.VERSION.SDK_INT >= 29){
+                ImageDecoder.Source src =
+                        ImageDecoder.createSource(getContentResolver(), selectedImage);
+                bitmap = ImageDecoder.decodeBitmap(src);
+            } else{
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
             }
+        }catch (IOException e ){
+            Log.e(TAG, "Failed to read Image", e);
+        }
+
+        // Inference
+        if(bitmap != null){
+            outputList = classifier.classify(bitmap);
+            String resultStr = String.format(Locale.ENGLISH,
+                    "Inferred class : %s " + System.lineSeparator() + "Probability : %.2f%%",
+                    outputList.get(0).getKey(), outputList.get(0).getValue() * 100);
+
+            imageView.setImageBitmap(bitmap);
+            output_textView.setText(resultStr);
+        }else{
+            Log.e(TAG,"Bitmap is null Object");
         }
     }
 }

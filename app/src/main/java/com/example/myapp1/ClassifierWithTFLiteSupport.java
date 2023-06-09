@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * TF model logic class for inference
+ * @author MW
+ */
 public class ClassifierWithTFLiteSupport {
     private final static String TAG = "ClassifierWithTFLiteSupport"; // for logging
     private final String MODEL_NAME;

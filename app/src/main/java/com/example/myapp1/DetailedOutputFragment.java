@@ -1,19 +1,19 @@
 package com.example.myapp1;
 
 import android.os.Bundle;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link DetailedOutputFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment to show detailed inference result
+ * @author MW
  */
 public class DetailedOutputFragment extends DialogFragment implements View.OnClickListener {
     public static final String TAG = "DetailedOutputFragment";

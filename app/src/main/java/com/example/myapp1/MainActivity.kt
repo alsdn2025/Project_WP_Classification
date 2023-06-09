@@ -19,10 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapp1.Cam.CameraActivity
 import com.example.myapp1.databinding.ActivityMainBinding
-import com.example.myapp1.navigation.AlarmFragment
 import com.example.myapp1.navigation.DetailViewFragment
 import com.example.myapp1.navigation.SearchFragment
-import com.example.myapp1.navigation.UserFragment
 import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationBarView
 
@@ -66,7 +64,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
         //Gps기능 사용하기 위해
         mLocationRequest = LocationRequest.create().apply {
-
+            interval = 1000//주기 갱신을 1000ms, 1초마다 해달라고 요청, 11/27 추가
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         }
