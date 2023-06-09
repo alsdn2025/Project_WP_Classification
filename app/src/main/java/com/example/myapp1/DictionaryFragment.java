@@ -79,6 +79,10 @@ public class DictionaryFragment extends DialogFragment implements View.OnClickLi
 
                 String item2 = new String(
                         o.getString("desc")
+                                .replace("\\n", System.getProperty("line.separator"))
+                                .replace("\"", "")
+                                .replace("[", "")
+                                .replace("]", "")
                 );
 
                 list_desc.add(item2);
@@ -88,8 +92,6 @@ public class DictionaryFragment extends DialogFragment implements View.OnClickLi
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        Log.e(TAG, "Created Dictionary");
     }
 
     // 프래그먼트 생성 후 호출
