@@ -1,6 +1,7 @@
 package com.example.myapp1;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -87,6 +88,8 @@ public class DictionaryFragment extends DialogFragment implements View.OnClickLi
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Log.e(TAG, "Created Dictionary");
     }
 
     // 프래그먼트 생성 후 호출

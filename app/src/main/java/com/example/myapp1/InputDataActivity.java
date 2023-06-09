@@ -27,15 +27,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/*
- * usage : 갤러리에서 사진을 꺼내어 추론 요청, 결과 표시
- *
- * */
-
 /**
  * usage : 갤러리에서 사진을 꺼내어 추론 요청, 결과 표시
  * @author MW
- */
+ * */
 public class InputDataActivity extends FragmentActivity {
     public static final int GALLERY_IMAGE_REQUEST_CODE = 1;
     public static final int CAMERA_IMAGE_REQUEST_CODE = 2;
@@ -59,6 +54,9 @@ public class InputDataActivity extends FragmentActivity {
 
         Button cameraBtn = findViewById(R.id.cameraBtn);
         cameraBtn.setOnClickListener(view -> getImageFromCamera());
+
+        Button dictBtn = findViewById(R.id.dictBtn);
+        dictBtn.setOnClickListener(view -> getDictionaryDialog());
 
         Button detailBtn = findViewById(R.id.detailBtn);
         detailBtn.setOnClickListener(view -> getDetailedOutputDialog());
@@ -136,6 +134,19 @@ public class InputDataActivity extends FragmentActivity {
         }catch (Exception e){
             Log.e(TAG, "Failed to get Image from Camera", e);
         }
+    }
+
+    // 사전 기능 추가
+    private void getDictionaryDialog(){
+        if(outputList == null){
+            Toast.makeText(this, "아직 추론을 하지 않았어요!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String result = outputList.get(0).getKey();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        DictionaryFragment dictionaryFragment = DictionaryFragment.newInstance(result);
+        dictionaryFragment.show(fragmentManager, PostingFragment.TAG);
     }
 
     // 자세한 확률을 표시하는 Dialog 생성
