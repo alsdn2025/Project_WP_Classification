@@ -1,5 +1,6 @@
 ### Project_WP_Classification
 ### Repo for sharing with 'general design' team members(TJ, JC, YG)
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/13341368-fafe-4229-b631-1278605e8f8b)
 
 # 제주스타그램
 ### 제주스타그램은 제주도에 서식하는 자생식물들의 도감을 만들어가는 애플리케이션입니다. 
@@ -30,3 +31,13 @@
 
 ## License
 #### 이 애플리케이션은 MIT License를 따릅니다.
+
+
+
+## 데이터셋
+#### 해당 애플리케이션의 분류 모델 학습시 사용된 데이터셋은 AI HUB 에서 제공받았습니다. 
+#### (https://www.aihub.or.kr/) 
+
+## 외부 라이브러리
+#### 프로그래스 바 : https://github.com/akexorcist/RoundCornerProgressBar
+#### 완성 이펙트 : https://github.com/DanielMartinus/konfetti
