@@ -1,7 +1,7 @@
 # Project_WP_Classification
 ### Repo for sharing with 'general design' team members(TJ, JC, YG)
 
-제주스타그램
+#제주스타그램
 ###제주스타그램은 제주도에 서식하는 자생식물들의 도감을 만들어가는 애플리케이션입니다. 
 ###이 애플리케이션은 Google TensorFlow Lite를 사용하여 만들어진 이미지 분류 모델을 활용하여 
 ###총 30가지의 자생식물의 잎, 열매, 꽃을 인식하고 사용자에게 해당 식물에 대한 정보를 제공합니다.
