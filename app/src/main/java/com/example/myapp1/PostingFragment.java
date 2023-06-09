@@ -28,8 +28,8 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 
 /**
- * Fragment for: Post inference results
- * @author MW
+ *Fragment for: Post inference results
+ *@authorMW
  */
 public class PostingFragment extends DialogFragment implements View.OnClickListener {
     public static final int REQUEST_LOCATION_PERMISSION_CODE = 100;
@@ -40,6 +40,7 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
     private static final String RESULT = "RESULT";
 
     private SQLiteDatabase database;
+    private DBHelper dbHelper;
     TextInputEditText textInput;
     private FusedLocationProviderClient fusedLocationProviderClient; // local location Provider
 
@@ -112,7 +113,7 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
 
         // DB 초기화
         // DB 이름 static 으로 임의로 지정
-        DBHelper dbHelper = new DBHelper(this.getContext(), DB_NAME, null, 1);
+        dbHelper = new DBHelper(this.getContext(), DB_NAME, null, 1);
         database = dbHelper.getWritableDatabase();
 
         getLocation(); // 위치 정보 요청
@@ -196,10 +197,30 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
         }
     }
 
-    // 포스팅 버튼 클릭시 DB에 결과 데이터를 저장하는 메서드
+
+    // MW: delete latest data from db
+    public void deleteData(){
+        int lastIndex = dbHelper.getLastIndex();
+        if(lastIndex <= 0){
+            Toast.makeText(this.getContext(), "삭제할 데이터가 없습니다.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this.getContext(), "(Developer only)DB 데이터를 삭제합니다. id=" + lastIndex +"행이 삭제됩니다.",Toast.LENGTH_SHORT).show();
+        dbHelper.deleteData(String.valueOf(lastIndex));
+        database = dbHelper.getWritableDatabase();
+    }
+
+    // MW: 포스팅 버튼 클릭시 DB에 결과 데이터를 저장하는 메서드
     @Override
     public void onClick(View view) {
         String comment = Objects.requireNonNull(this.textInput.getText()).toString(); // comment
+
+        // delete last raw data
+        if(comment.equals("delete")){
+            deleteData();
+            return;
+        }
 
         // 위도 경도가 모두 0.0 이면 제대로 위치를 받아오지 못했다고 판단, DB에 저장하지 않고 종료
         if(latitude == 0.0 && longitude == 0.0){
@@ -207,14 +228,16 @@ public class PostingFragment extends DialogFragment implements View.OnClickListe
             dismiss();
         }
 
+
+        // 지도상 아예 겹치는 것을 방지하기 위해 임시로 random값 이용
         ContentValues contentValues = new ContentValues();
-        // 지도상 아예 겹치는 것을 방지하기 위해 임시로 random 이용
         contentValues.put("lat", latitude + (Math.random()-0.5)*0.001); // 위도
         contentValues.put("long", longitude + (Math.random()-0.5)*0.001); // 경도
         contentValues.put("filename", fileName); // 파일 이름
         contentValues.put("class", className); // 클래스명
         contentValues.put("comment", comment); // 사용자가 입력한 코멘트
         database.insert("location", null, contentValues ); // location 테이블에 저장
+
         Toast.makeText(this.getContext(), "DB에 추가 완료!",Toast.LENGTH_SHORT).show();
 
         dismiss();
