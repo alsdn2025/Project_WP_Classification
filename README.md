@@ -1,26 +1,104 @@
-## MW 2022/12/03
+#### Project_WP_Classification
+#### Repo for sharing with 'general design' team members(TJ, JC, YG)
+<br><br>
 
-### DBHelper 클래스에 메서드 추가 
-### DB 구조는 건들지 않음
+---------------
 
-### 컬렉션 기능을 위한 CollectionFragment.java , CollectionManager.java, CollectionImgAdapter.java , GridItemDTO.java 추가
-### UserFragment 안쓰임
-### Collection 기능 공지 
-####: 최종 시연 영상 촬영용으로, 수집 못한 아이템일 지라도 클릭시 수집되도록(치트) 수정했습니다 
-#### 이 때 Collection Fragment 를 벗어났다가 다시 오면 이미지가 가려져 있습니다. 
-#### 이는 정상이며, 애초에 일회성 촬영용 치트 기능이므로 무시해도 됩니다. 
-
-
-## MainActivity.kt 컬렉션 기능을 위한 CollectionManager 등 내용 추가, 기존 User 버튼 이벤트 삭제, CollectionFragment 호출로 변경 
-
-### TO TJ > 컬렉션 기능 dictionary.json 파일을 이용해서 만듦, read 만 했음, 수정 x
-
-## build.gradle(Module:My_App1.app)  수정  
-#### progress bar , party effect 의존성 추가 
-#### 외부 의존성 다수 사용( glide, 파티 이펙트, 프로그래스 바 등 )
-## manifest 는 변경 x ( 마지막 수정일 2022-11-27 )
-## res>layout, res>drawable, res>color 다수 추가 & 수정 
-
-## 염곤씨 카메라 수정사항 ( 11/28 ) 반영 안함, 이번 주 진척사항 마무리 후 반영 예정 
+# 제주스타그램
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/13341368-fafe-4229-b631-1278605e8f8b)
+#### 제주스타그램은 제주도에 서식하는 자생식물들의 도감을 만들어가는 애플리케이션입니다. 
+#### 사용자는 제주도의 자생식물들을 직접 촬영하고 정보를 알아내며, 마치 포켓몬 도감처럼 이를 수집할 수 있습니다. 
+<br><br>
 
 
+# 이미지 분류 모델
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/42ff88fe-bd14-4c49-a742-f177e86bbbdb)
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/73554e86-f280-4343-80e8-0852dfbc6f18)
+#### 해당 애플리케이션은 Google TensorFlow Lite 라이브러리를 활용하여 만들어진 이미지 분류 모델을 통하여, 
+#### 총 30가지의 자생식물의 잎, 열매, 꽃을 인식하고 사용자에게 해당 식물에 대한 정보를 제공합니다.
+<br><br>
+
+
+## 기능(1) : 식물 분류
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/8c59922f-f00c-4f0b-8d2f-f05ae4cdd50a)
+#### 사용자가 식물의 특정 부위(잎, 열매, 꽃)의 사진을 촬영하거나 선택하여 제출하면, 
+#### 앱에 내장된 이미지 분류 모델이 이를 기반으로 식물의 이름을 분류해냅니다. 
+#### 분류가 끝나면 사용자는 해당 식물의 이름, 추론 확률을 제공받으며, 
+#### 추가적으로 독성이나 식용 여부 등을 포함한 상제 정보를 열람할 수 있습니다. 
+#### 이를 통해 사용자는 제주도에서 발견한 식물들을 쉽게 식별하고 관련 정보를 얻을 수 있습니다.
+<br><br>
+
+
+## 기능(2) : 게시글 포스팅
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/70e7f62c-5ec9-4884-8777-909c7062dfd3)
+#### 사용자는 찾아낸 식물을 애플리케이션의 게시판에 포스팅할 수 있습니다. 
+#### 해당 식물을 발견한 위치, 날짜, 코멘트 등을 포함하여 게시글을 작성하고, 순간을 추억할 수 있습니다. 
+#### 식물에 관한 경험을 저장하고 교류할 수 있는 공간입니다.
+<br><br>
+
+## 기능(3) : 식물 도감 (컬렉션)
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/de37ddf6-077c-439d-9469-9bff566b967d)
+#### 제주도에 서식하는 자생식물의 컬렉션을 모두 모아보세요. 
+#### 애플리케이션 내에서 제공되는 컬렉션 화면에서 나의 컬렉션 완성도를 확인하고, 
+#### 각 식물의 세부 정보와 함께 사용자가 찍은 사진을 확인할 수 있습니다. 
+![image](https://github.com/alsdn2025/Project_WP_Classification/assets/77447518/09a820d2-c8d1-4665-a091-6fcb8420e0c3)
+#### 모든 컬렉션을 완성할 시, 특별한 이펙트가 재생됩니다. 
+#### 제주도의 다양한 식물들을 찾아가며 컬렉션을 완성해보세요!
+<br><br>
+
+
+## 개발 중인 기능 : SNS 공유
+#### (아직 개발 중인 추가 기능입니다. )
+#### 애플리케이션을 통해 수집한 식물의 사진, 위치, 설명 등을 카카오톡, 페이스북 등을 통해 손쉽게 공유할 수 있습니다. 
+#### 다른 사람들과 식물에 대한 관심과 경험을 공유하고 함께 자연을 사랑하는 커뮤니티를 형성해보세요.
+<br><br>
+
+
+### License
+#### 이 애플리케이션은 MIT License를 따릅니다.
+<br><br>
+
+### 식물종
+#### 분류 가능한 식물 종 리스트는 다음과 같습니다. 
+##### 까마귀쪽나무_001
+##### 문주란_003
+##### 참식나무_004
+##### 제주조릿대_005
+##### 메밀_009
+##### 구지뽕나무_010
+##### 구실잣밤나무_011
+##### 예덕나무_013
+##### 차풀_014
+##### 쪽동백나무_016
+##### 팔손이_021
+##### 큰조롱_022
+##### 등수국_027
+##### 삼백초_030
+##### 섬오갈피_032
+##### 눈개승마(삼나물)_036
+##### 순비기나무_040
+##### 참꽃나무_041
+##### 참가시나무_043
+##### 아왜나무_045
+##### 황근_046
+##### 해국_048
+##### 비자나무_050
+##### 한라꽃향유_051
+##### 백량금_053
+##### 참취_056
+##### 번행초_057
+##### 참당귀_058
+##### 사방오리나무_059
+##### 꽝꽝나무_060
+
+
+### 데이터셋
+#### 해당 애플리케이션의 분류 모델 학습시 사용된 데이터셋은 AI HUB 에서 제공받았습니다. 
+#### (https://www.aihub.or.kr/) 
+<br><br>
+
+
+### 외부 라이브러리
+#### 프로그래스 바 : https://github.com/akexorcist/RoundCornerProgressBar
+#### 완성 이펙트 : https://github.com/DanielMartinus/konfetti
+<br><br>
