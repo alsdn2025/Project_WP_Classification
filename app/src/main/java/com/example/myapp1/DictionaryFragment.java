@@ -24,7 +24,7 @@ import java.util.List;
  * @author MW
  */
 public class DictionaryFragment extends DialogFragment implements View.OnClickListener {
-    public static final String TAG = "DictionaryFragment";
+    public static final String TAG = "DICTIONARY_FRAGMENT";
     private static final String OUTPUT = "OUTPUT";
 
     private String output;

@@ -47,7 +47,7 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
  * @author MW
  */
 public class CollectionFragment extends Fragment {
-    private static final String TAG = "CollectionFragment";
+    private static final String TAG = "COLLECTION_FRAGMENT";
     private static final int TOTAL_CLASS_NUMBER = 30;
     GridView gridView;
     CollectionManager manager;

@@ -16,7 +16,7 @@ import android.widget.TextView;
  * @author MW
  */
 public class DetailedOutputFragment extends DialogFragment implements View.OnClickListener {
-    public static final String TAG = "DetailedOutputFragment";
+    public static final String TAG = "DETAILED_OUTPUT_FRAGMENT";
     private static final String FILE_NAME = "FILE_NAME";
     private static final String PROBABILITIES = "PROBABILITIES";
 

@@ -25,7 +25,7 @@ import java.util.Map.Entry;
  * @author MW
  */
 public class ClassifierWithTFLiteSupport {
-    private final static String TAG = "ClassifierWithTFLiteSupport"; // for logging
+    private final static String TAG = "CLASSIFIER_WITH_TF_LITE_SUPPORT"; // for logging
     private final String MODEL_NAME;
     private final String LABEL_FILE;
 

@@ -42,8 +42,6 @@ class DetailViewFragment :Fragment(){
 
     @SuppressLint("Range")
     inner class DetailViewRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
-        //var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
-        //var contentUidList : ArrayList<String> = arrayListOf()
 
         val idList: MutableList<Int> = ArrayList()
         val latList: MutableList<Double> = ArrayList() // 위도
@@ -53,30 +51,6 @@ class DetailViewFragment :Fragment(){
         val commentList: MutableList<String> = ArrayList()
 
         init{
-
-            //contentDTOs.clear()
-            //contentUidList.clear()
-
-            //contentDTOs.add(ContentDTO("2022년 3월 14일의 기록\n여기는 오스트리아.. 날씨가 너무 좋다...\n놀러가고싶다", "https://youimg1.tripcdn.com/target/10051f000001gsu1kA30F_D_1180_558.jpg?proc=source%2Ftrip",
-            //    "uid", "taejun", 10, 0))
-            // contentUidList.add("hih")
-
-            //contentDTOs.add(ContentDTO("2022년 11월 15일의 기록\nzzz...", "https://a.cdn-hotels.com/gdcs/production99/d638/1ed9319f-17d1-4f1b-be12-6ec1ea643a23.jpg?impolicy=fcrop&w=800&h=533&q=medium",
-            //    "uid", "taejun", 2, 0))
-            //contentUidList.add("hih")
-
-            //notifyDataSetChanged()
-
-            // println(contentDTOs.toString())
-
-            //초기 default값 설정
-            //idList.add(1234567890)
-            //latList.add(1.0)
-            //longList.add(2.0)
-            //fileNameList.add("test filename")
-            //classNameList.add("식물의 이름")
-            //commentList.add("이곳에는 여러분의 코멘트가 적힐 장소입니다.")
-
 
             val query = "SELECT * FROM location"
             if (File(DB_PATH + DB_NAME).exists()) {
@@ -127,19 +101,11 @@ class DetailViewFragment :Fragment(){
             viewholder.findViewById<TextView>(R.id.detailviewitem_location_textview).text =
                 "위치 : " + latList[position].toString() + " " + longList[position].toString()
 
-            //Image
-            //contentDTOs!![position].imageUrl
-//            Glide.with(holder.itemView.context).load(IMAGE_PATH+fileNameList[position]).into(viewholder.findViewById(R.id.detailviewitem_imageview_content))
             // mw : image path test
             Glide.with(holder.itemView.context).load(fileNameList[position]).into(viewholder.findViewById(R.id.detailviewitem_imageview_content))
+
             //Explain
             viewholder.findViewById<TextView>(R.id.detailviewitem_explain_textview).text = commentList[position]
-
-            //likes
-            //viewholder.findViewById<TextView>(R.id.detailviewitem_favoritecounter_textview).text = "Likes " + contentDTOs!![position].favoriteCount
-
-            //ProfileImage
-            //Glide.with(holder.itemView.context).load(R.drawable.logo_team2).into(viewholder.findViewById(R.id.detailviewitem_profile_image))
         }
 
         override fun getItemCount(): Int {

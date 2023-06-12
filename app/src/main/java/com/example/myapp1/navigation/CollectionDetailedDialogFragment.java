@@ -29,7 +29,7 @@ import java.io.InputStream;
  * @author MW
  */
 public class CollectionDetailedDialogFragment extends DialogFragment implements View.OnClickListener {
-    public static final String TAG = "CollectionDetailedDialogFragment";
+    public static final String TAG = "COLLECTION_DETAILED_DIALOG_FRAGMENT";
     private static final String CLASS_NAME = "CLASS_NAME";
     private static final String CLASS_ID = "CLASS_ID";
     private static final String FILE_PATH = "FILE_PATH";

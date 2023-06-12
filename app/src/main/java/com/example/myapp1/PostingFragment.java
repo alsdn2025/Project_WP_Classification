@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
  */
 public class PostingFragment extends DialogFragment implements View.OnClickListener {
     public static final int REQUEST_LOCATION_PERMISSION_CODE = 100;
-    public static final String TAG = "PostingFragment";
+    public static final String TAG = "POSTING_FRAGMENT";
     public static final String DB_NAME = "mw_temp.db"; // DB 이름, 임의로 지정함
     private static final String FILE_NAME = "FILE_NAME";
     private static final String ORGAN = "ORGAN";
